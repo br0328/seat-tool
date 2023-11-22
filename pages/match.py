@@ -1,4 +1,7 @@
 
+""" Match Tab Page
+"""
+
 from tkinter import messagebox
 from constant import *
 from model import *

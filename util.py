@@ -1,4 +1,7 @@
 
+""" Common utility functions
+"""
+
 import pandas as pd
 
 def regularize_dict(d, default_dict):

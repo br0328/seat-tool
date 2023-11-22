@@ -1,4 +1,7 @@
 
+""" Selection Tab Page
+"""
+
 from tkinter import filedialog, messagebox
 from constant import *
 from model import *
@@ -85,6 +88,7 @@ def on_treeview_dbl_clicked(tv, item):
     
     show_entry_dlg(False, default_values, page_model['column_info'], on_edit, tags = (item, ))
 
+# Assumed that only selected members are listed in the CSV file
 def on_import_csv_clicked():
     csv_path = filedialog.askopenfilename(title = 'Select an CSV file', filetypes = [('CSV Files', '*.csv')])
     if csv_path is None or not os.path.exists(csv_path): return

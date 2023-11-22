@@ -1,4 +1,7 @@
 
+""" New-Event Tab Page
+"""
+
 from tkinter import filedialog, messagebox
 from constant import *
 from model import *
@@ -86,7 +89,7 @@ def on_save_db_clicked():
     for _, row in df.iterrows():
         rec = {
             'eid': eid,
-            'title': row['val1'],
+            'title': row['val1'], # The first field of New Event record is translated into the Event Name
             'display': display
         }
         ev_df = pd.concat([ev_df, pd.Series(rec).to_frame().T], ignore_index = True)

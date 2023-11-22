@@ -1,4 +1,7 @@
 
+""" Hist-Event Tab Page
+"""
+
 from tkinter import messagebox
 from constant import *
 from model import *
@@ -7,8 +10,8 @@ from ui import *
 import pandas as pd
 
 page_model = {
-    'backbone': None,
-    'evdf': None,
+    'backbone': None, # Back DataFrame
+    'evdf': None, # Event DataFrame
     'treeview': None,
     'vscroll': None,
     'column_info': None,
@@ -25,6 +28,7 @@ def on_tab_selected():
     page_model['evdf'] = load_table('tbl_event', 'display')
     heavy_refresh()
 
+# Any change of Event table causes full refresh of the page
 def heavy_refresh():
     if page_model['treeview']:
         page_model['treeview'].destroy()

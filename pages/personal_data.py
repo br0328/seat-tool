@@ -1,4 +1,7 @@
 
+""" Personal-Data Tab Page
+"""
+
 from tkinter import filedialog, messagebox
 from constant import *
 from model import *

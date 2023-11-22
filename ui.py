@@ -1,10 +1,14 @@
 
+""" Common UI functions based on TkInter
+"""
+
 from tkinter import filedialog, messagebox, simpledialog
 from tkinter import ttk
 from model import *
 from util import *
 import tkinter as tk
 
+# Create a tab page
 def create_tab(master, name, callback):
     tab = ttk.Frame(master)
     master.add(tab, text = name)
@@ -12,6 +16,7 @@ def create_tab(master, name, callback):
     glob_model['tab_callback'][name] = callback
     return tab
 
+# Create a Treeview widget configured by column information and double-click callback function
 def create_treeview(master, column_info, dbl_click_callback):
     tv = ttk.Treeview(master, columns = [key for key, _ in column_info], show = 'headings')
 
@@ -22,6 +27,7 @@ def create_treeview(master, column_info, dbl_click_callback):
         tv.column(key, width = info['width'], anchor = info['anchor'])
         tv.heading(key, text = info['title'], anchor = 'center')
 
+    # Add an external v-scrollbar
     vscrollbar = ttk.Scrollbar(master, orient = "vertical", command = tv.yview)
     vscrollbar.pack(side ='right', fill ='y')
     
@@ -31,11 +37,13 @@ def create_treeview(master, column_info, dbl_click_callback):
 
     return tv, vscrollbar
 
+# Create a button with its click callback function
 def create_button(master, name, click_callback):
     but = tk.Button(master, text = name, command = click_callback or show_not_developed_alert)
     but.pack(side = tk.LEFT, padx = 4, pady = 5)
     return but
 
+# Create a control panel including numerous buttons
 def create_control_panel(master, button_info):
     buttons = {}
     
@@ -48,6 +56,7 @@ def create_control_panel(master, button_info):
     
     return buttons
 
+# Show entry input dialog for Add or Edit
 def show_entry_dlg(is_add, values, column_info, callback, tags = ()):
     dlg = tk.Toplevel()
     dlg.title('Add Entry' if is_add else 'Edit Entry')
@@ -69,5 +78,6 @@ def show_entry_dlg(is_add, values, column_info, callback, tags = ()):
 
     tk.Button(dlg, text = 'Add' if is_add else 'Save', command = lambda: callback(dlg, entries, tags)).grid(row = row, column = 1)
 
+# Dummy dialog
 def show_not_developed_alert():
     messagebox.showerror('Error', 'This function is not yet developed.')

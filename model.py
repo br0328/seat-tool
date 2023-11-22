@@ -1,4 +1,7 @@
 
+""" Global model and db functions
+"""
+
 from constant import *
 from schema import *
 import pandas as pd
@@ -6,10 +9,12 @@ import sqlite3
 import os
 
 glob_model = {
-    'local_conn': None,
-    'tab_callback': {}
+    'local_conn': None, # Global variable for local db connection (It keeps alive for the whole app process)
+    'tab_callback': {} # Callback functions for tab pages opening
 }
 
+# Load Sqlite3 db if exists,
+# Create a new one if not found
 def load_or_create_db():
     if glob_model['local_conn'] is not None: return glob_model['local_conn']
 
@@ -17,6 +22,7 @@ def load_or_create_db():
         conn = sqlite3.connect(local_db_path)
         cursor = conn.cursor()
 
+        # Run `CREATE TABLE ...` queries for empty tables
         for _, sch in schemas.items():
             cursor.execute(sch)
 
@@ -42,6 +48,7 @@ def close_db(no_commit = False):
     glob_model['local_conn'] = None
     conn.close()
 
+# Return pandas DataFrame from a table
 def load_table(tbl, order = None):
     order_str = '' if order is None else f" ORDER BY {order}"
     conn = load_or_create_db()
@@ -49,6 +56,7 @@ def load_table(tbl, order = None):
     df = pd.read_sql(f"SELECT * FROM {tbl}{order_str}", conn)
     return df
 
+# Overwrite a table by pandas DataFrame object
 def save_table(tbl, df):
     conn = load_or_create_db()
     res = True

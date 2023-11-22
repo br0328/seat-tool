@@ -1,4 +1,7 @@
 
+""" Database Table Schemas
+"""
+
 schemas = {
     'comment': '''
         CREATE TABLE IF NOT EXISTS tbl_comment (

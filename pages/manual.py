@@ -1,11 +1,11 @@
 
-from tkinter import filedialog, messagebox
+""" Manual HTML Tab Page
+"""
+
 from tkhtmlview import HTMLScrolledText
+from tkinter import messagebox
 from constant import *
-from model import *
-from util import *
 from ui import *
-import pandas as pd
 
 page_model = {
     'tab': None,

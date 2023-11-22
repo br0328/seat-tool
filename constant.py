@@ -1,4 +1,7 @@
 
+""" Global constant values
+"""
+
 local_db_path = './data/local.db'
 manual_doc_path = './data/readme.html'
 
