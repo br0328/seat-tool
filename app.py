@@ -3,6 +3,10 @@ from pages import personal_data
 from pages import hist_event
 from pages import new_event
 from pages import match
+from pages import no_match
+from pages import never_match
+from pages import selection
+from pages import manual
 from tkinter import ttk
 from model import *
 from util import *
@@ -34,7 +38,11 @@ notebook.pack(expand = True, fill = 'both', padx = 10, pady = 10)
 personal_data.init_tab(notebook)
 hist_event.init_tab(notebook)
 match.init_tab(notebook)
+no_match.init_tab(notebook)
+never_match.init_tab(notebook)
+selection.init_tab(notebook)
 new_event.init_tab(notebook)
+manual.init_tab(notebook)
 
 notebook.bind("<<NotebookTabChanged>>", on_tab_changed)
 root.mainloop()

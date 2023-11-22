@@ -14,7 +14,7 @@ def create_tab(master, name, callback):
 
 def create_treeview(master, column_info, dbl_click_callback):
     tv = ttk.Treeview(master, columns = [key for key, _ in column_info], show = 'headings')
-    
+
     for key, info in column_info:
         regularize_dict(info, {
             'title': '', 'width': 0, 'anchor': 'center', 'editable': False, 'dtype': str
