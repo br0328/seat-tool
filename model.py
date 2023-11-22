@@ -42,9 +42,11 @@ def close_db(no_commit = False):
     glob_model['local_conn'] = None
     conn.close()
 
-def load_table(tbl):
+def load_table(tbl, order = None):
+    order_str = '' if order is None else f" ORDER BY {order}"
     conn = load_or_create_db()
-    df = pd.read_sql(f'SELECT * FROM {tbl}', conn)
+    
+    df = pd.read_sql(f"SELECT * FROM {tbl}{order_str}", conn)
     return df
 
 def save_table(tbl, df):

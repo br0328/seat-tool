@@ -20,13 +20,13 @@ page_model = {
     ],
     'history': [],
     'history_pos': 0,
-    'buttons': []
+    'buttons': None
 }
 
 def init_tab(notebook):
     tab = create_tab(notebook, 'Personal-Data', on_tab_selected)
 
-    page_model['treeview'] = tv = create_treeview(
+    tv, _ = create_treeview(
         master = tab,
         column_info = page_model['column_info'],
         dbl_click_callback = on_treeview_dbl_clicked
@@ -51,6 +51,7 @@ def init_tab(notebook):
     tv.tag_configure('dup_name', background = 'salmon')
     tv.tag_configure('dup_mid', background = 'light blue')
     
+    page_model['treeview'] = tv
     on_tab_selected()
 
 def on_tab_selected():
@@ -148,7 +149,7 @@ def on_load_excel_clicked():
     update_treeview(lambda: messagebox.showinfo('Success', 'Excel file loaded successfully.'))
 
 def on_load_database_clicked(is_init = False):
-    page_model['backbone'] = load_table('tbl_person')
+    page_model['backbone'] = load_table('tbl_person', 'display')
     page_model['is_excel'] = False
     
     reset_history()

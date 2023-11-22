@@ -25,3 +25,17 @@ def check_ci_validation(ci, val):
 def null_or(val, def_val):
     if pd.isna(val) or pd.isnull(val): return def_val
     return val
+
+def int_nonzero_or_empty(val):
+    if val == 0: return ''
+    
+    try:
+        return str(int(val))
+    except Exception:
+        return ''
+
+def get_int_nzoe(val):
+    try:
+        return int(val)
+    except Exception:
+        return 0

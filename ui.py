@@ -24,12 +24,12 @@ def create_treeview(master, column_info, dbl_click_callback):
 
     vscrollbar = ttk.Scrollbar(master, orient = "vertical", command = tv.yview)
     vscrollbar.pack(side ='right', fill ='y')
-    tv.configure(yscrollcommand = vscrollbar.set)
     
+    tv.configure(yscrollcommand = vscrollbar.set)    
     tv.bind('<Double-1>', lambda e: dbl_click_callback(tv, tv.identify_row(e.y)))
     tv.pack(expand = True, fill = 'both', padx = 10, pady = 10)
 
-    return tv
+    return tv, vscrollbar
 
 def create_button(master, name, click_callback):
     but = tk.Button(master, text = name, command = click_callback or show_not_developed_alert)
