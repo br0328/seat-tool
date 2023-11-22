@@ -1,5 +1,6 @@
 
 from tkinter import filedialog, messagebox
+from constant import *
 from model import *
 from util import *
 from ui import *
@@ -244,21 +245,53 @@ def on_save_database():
         messagebox.showerror('Error', 'There exist(s) invalid record(s).\nPlease fix and retry.')
         return
 
-    records = []
+    ev_cols = [col for col in sorted(list(df.columns)) if col.startswith('Event-')]    
+    person_records, ev_records, person_ev_records, match_records, no_match_records, never_match_records, sel_records = [], [], [], [], [], [], []
     
     for _, row in df.iterrows():
-        records.append((
+        person_records.append((
             row['mid'], row['surname'], row['forename'], row['branch'], row['display']
         ))
+        
+        if page_model['is_excel']:
+            sel_records.append((
+                row['mid'], null_or(row['Selection'], 0)
+            ))
+            match_records.append(tuple([row['mid']] + [null_or(row[f"Match_{k + 1}"], 0) for k in range(match_col_count)]))
+            no_match_records.append(tuple([row['mid']] + [null_or(row[f"No_Match_{k + 1}"], 0) for k in range(no_match_col_count)]))
+            never_match_records.append(tuple([row['mid']] + [null_or(row[f"Never_Match_{k + 1}"], 0) for k in range(never_match_col_count)]))
 
-    out_df = pd.DataFrame(records, columns = ['mid', 'surname', 'forename', 'branch', 'display'])
-    ok = save_table('tbl_person', out_df)
+            for i, col in enumerate(ev_cols):
+                person_ev_records.append((
+                    row['mid'], i + 1, null_or(row[col], 0)
+                ))
+
+    if page_model['is_excel']:
+        for i, col in enumerate(ev_cols):
+            ev_records.append((
+                i + 1, col, i + 1                
+            ))
+
+    person_df = pd.DataFrame(person_records, columns = ['mid', 'surname', 'forename', 'branch', 'display'])
+
+    tbl_df_dict = {
+        'tbl_person': person_df,
+        'tbl_person_selection': pd.DataFrame(sel_records, columns = ['mid', 'val']),
+        'tbl_event': pd.DataFrame(ev_records, columns = ['eid', 'title', 'display']),
+        'tbl_person_event': pd.DataFrame(person_ev_records, columns = ['mid', 'eid', 'val']),
+        'tbl_person_match': pd.DataFrame(match_records, columns = ['mid'] + [f"val{k + 1}" for k in range(match_col_count)]),
+        'tbl_person_no_match': pd.DataFrame(no_match_records, columns = ['mid'] + [f"val{k + 1}" for k in range(no_match_col_count)]),
+        'tbl_person_never_match': pd.DataFrame(never_match_records, columns = ['mid'] + [f"val{k + 1}" for k in range(never_match_col_count)])
+    } if page_model['is_excel'] else {
+        'tbl_person': person_df
+    }        
+    for tbl, df in tbl_df_dict.items():
+        if not save_table(tbl, df):
+            messagebox.showerror('Error', f"Failed to save {tbl}.")
+            return
     
-    if ok:
-        messagebox.showinfo('Success', 'Saved database successfully.')
-    else:
-        messagebox.showerror('Error', 'Failed to save database.')
-
+    messagebox.showinfo('Success', 'Saved database successfully.')
+    
 def update_treeview(callback = None):
     tv = page_model['treeview']
     tv.delete(*tv.get_children())

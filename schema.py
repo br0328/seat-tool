@@ -1,5 +1,14 @@
 
 schemas = {
+    'comment': '''
+        CREATE TABLE IF NOT EXISTS tbl_comment (
+            iid INT NOT NULL,
+            col TEXT NOT NULL,
+            val TEXT,
+            PRIMARY KEY (iid, col)
+        )
+        ''',
+
     'person': '''    
         CREATE TABLE IF NOT EXISTS tbl_person (
             mid INT NOT NULL,
@@ -24,7 +33,7 @@ schemas = {
         CREATE TABLE IF NOT EXISTS tbl_person_event (
             mid INT NOT NULL,
             eid INT NOT NULL,
-            val INT NOT NULL,
+            val INT,
             PRIMARY KEY (mid, eid)
         )
         ''',
@@ -32,11 +41,11 @@ schemas = {
     'person_match': '''    
         CREATE TABLE IF NOT EXISTS tbl_person_match (
             mid INT NOT NULL,
-            val1 INT NOT NULL,
-            val2 INT NOT NULL,
-            val3 INT NOT NULL,
-            val4 INT NOT NULL,
-            val5 INT NOT NULL,
+            val1 INT,
+            val2 INT,
+            val3 INT,
+            val4 INT,
+            val5 INT,
             PRIMARY KEY (mid)
         )
         ''',
@@ -44,11 +53,11 @@ schemas = {
     'person_no_match': '''    
         CREATE TABLE IF NOT EXISTS tbl_person_no_match (
             mid INT NOT NULL,
-            val1 INT NOT NULL,
-            val2 INT NOT NULL,
-            val3 INT NOT NULL,
-            val4 INT NOT NULL,
-            val5 INT NOT NULL,
+            val1 INT,
+            val2 INT,
+            val3 INT,
+            val4 INT,
+            val5 INT,
             PRIMARY KEY (mid)
         )
         ''',
@@ -56,16 +65,16 @@ schemas = {
     'person_never_match': '''    
         CREATE TABLE IF NOT EXISTS tbl_person_never_match (
             mid INT NOT NULL,
-            val1 INT NOT NULL,
-            val2 INT NOT NULL,
-            val3 INT NOT NULL,
-            val4 INT NOT NULL,
-            val5 INT NOT NULL,
-            val6 INT NOT NULL,
-            val7 INT NOT NULL,
-            val8 INT NOT NULL,
-            val9 INT NOT NULL,
-            val10 INT NOT NULL,
+            val1 INT,
+            val2 INT,
+            val3 INT,
+            val4 INT,
+            val5 INT,
+            val6 INT,
+            val7 INT,
+            val8 INT,
+            val9 INT,
+            val10 INT,
             PRIMARY KEY (mid)
         )
         ''',
@@ -82,15 +91,15 @@ schemas = {
         CREATE TABLE IF NOT EXISTS tbl_new_event (
             neid INT NOT NULL,
             val1 TEXT NOT NULL,
-            val2 TEXT NOT NULL,
-            val3 TEXT NOT NULL,
-            val4 TEXT NOT NULL,
-            val5 TEXT NOT NULL,
-            val6 TEXT NOT NULL,
-            val7 TEXT NOT NULL,
-            val8 TEXT NOT NULL,
-            val9 TEXT NOT NULL,
-            val10 TEXT NOT NULL,
+            val2 TEXT,
+            val3 TEXT,
+            val4 TEXT,
+            val5 TEXT,
+            val6 TEXT,
+            val7 TEXT,
+            val8 TEXT,
+            val9 TEXT,
+            val10 TEXT,
             PRIMARY KEY (neid)
         )
         '''

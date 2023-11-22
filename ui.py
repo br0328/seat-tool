@@ -9,7 +9,7 @@ def create_tab(master, name, callback):
     tab = ttk.Frame(master)
     master.add(tab, text = name)
     
-    glob_model['tab_callback'][tab] = callback
+    glob_model['tab_callback'][name] = callback
     return tab
 
 def create_treeview(master, column_info, dbl_click_callback):

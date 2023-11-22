@@ -7,8 +7,12 @@ from util import *
 from ui import *
 import tkinter as tk
 
-def on_tab_changed(event):
-    pass
+def on_tab_changed(e):
+    tab = e.widget.select()
+    name = e.widget.tab(tab, "text")
+    
+    callback = glob_model['tab_callback'][name]    
+    if callback: callback()
 
 root = tk.Tk()
 root.title("Seating Generation")
