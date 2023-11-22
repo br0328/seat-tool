@@ -44,7 +44,7 @@ def init_tab(notebook):
             'Delete Line(s)': { 'click': on_delete_line_clicked },
             'Show next free\nMember-ID': { 'click': on_next_mid_clicked },
             'Undo': { 'click': on_undo_clicked },
-            'Redo': { 'click': on_redo_clicked },
+            'Redo': { 'click': on_redo_clicked }
         }
     )
     tv.tag_configure('dup_full', background = 'orange')

@@ -56,7 +56,7 @@ def heavy_refresh():
         button_info = {
             'Edit line': { 'click': on_edit_line_clicked },
             'Add new column': { 'click': on_add_column_clicked },
-            'Save database': { 'click': on_save_db_clicked },
+            'Save database': { 'click': on_save_db_clicked }
         }
     )    
     page_model['evcount'] = len(ev_df)

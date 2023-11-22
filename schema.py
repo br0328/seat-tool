@@ -100,6 +100,7 @@ schemas = {
             val8 TEXT,
             val9 TEXT,
             val10 TEXT,
+            display INT NOT NULL,
             PRIMARY KEY (neid)
         )
         '''
