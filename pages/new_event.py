@@ -148,8 +148,11 @@ def update_treeview(callback = None):
     if callback: callback()
 
 def on_export_clicked():
-    page_model['backbone'].to_excel('./out/new_event.xlsx', index = False)
-    messagebox.showinfo('Export', 'Successfully exported to ./out/new_event.xlsx!')
+    xls_path = filedialog.asksaveasfilename(title = 'Select an Excel file', defaultextension = '.xlsx')
+    if xls_path is None: return
+    
+    page_model['backbone'].to_excel(xls_path, index = False)    
+    messagebox.showinfo('Export', f"Successfully exported to {xls_path}")
 
 def on_import_clicked():
     xls_path = filedialog.askopenfilename(title = 'Select an Excel file', filetypes = [('Excel Files', '*.xlsx')])

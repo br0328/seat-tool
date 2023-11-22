@@ -1,5 +1,5 @@
 
-from tkinter import filedialog, messagebox
+from tkinter import messagebox
 from constant import *
 from model import *
 from util import *
