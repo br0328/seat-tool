@@ -154,7 +154,7 @@ def on_enter(ev):
         
         msg = ''        
         person = get_person(page_model['person'], person_id)        
-        if person is not None: msg = person['surname'] + ', ' + person['forename']
+        if person is not None: msg = person['surname'] + ' ' + person['forename']
         
         comm = get_comment(page_model['comment'], page_tid, row_id, col_id) or ''
         

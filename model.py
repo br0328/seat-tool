@@ -75,11 +75,21 @@ def get_comment(comm_df, tid, mid, cid):
     
     return None
 
-def get_person(person_df, mid):
+def get_person(person_df, mid):    
     try:
+        mid = int(mid)
+        
         for _, r in person_df.iterrows():
-            if int(r['mid']) == int(mid): return r
+            if int(r['mid']) == mid: return r
     except Exception:
         pass
     
     return None
+
+def get_selected_persons(selection_df):
+    res = []
+    
+    for _, r in selection_df.iterrows():
+        if int(r['val']) > 0: res.append(int(r['mid']))
+
+    return res

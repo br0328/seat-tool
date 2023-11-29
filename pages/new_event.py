@@ -8,6 +8,8 @@ from model import *
 from util import *
 from ui import *
 import pandas as pd
+import numpy as np
+import random
 
 page_model = {
     'backbone': None,
@@ -16,17 +18,23 @@ page_model = {
         ('line', { 'title': 'Line Nr.' })
     ] + [
         (f"val{i}", { 'title': f"Table {i}", 'editable': True, 'dtype': str })
-        for i in range(1, new_event_col_count + 1)
-    ]
+        for i in range(1, desk_count + 1)
+    ],
+    'person': None,
+    'selection': None
 }
 
 def init_tab(notebook):
     tab = create_tab(notebook, 'New-Event', on_tab_selected)
     
+    st = ttk.Style()
+    st.configure('ne.Treeview', rowheight = 40)
+    
     page_model['treeview'], _ = create_treeview(
         master = tab,
         column_info = page_model['column_info'],
-        dbl_click_callback = on_treeview_dbl_clicked
+        dbl_click_callback = on_treeview_dbl_clicked,
+        style = 'ne.Treeview'
     )
     create_control_panel(
         master = tab,
@@ -41,6 +49,9 @@ def init_tab(notebook):
 
 def on_tab_selected():
     page_model['backbone'] = load_table('tbl_new_event', 'display')
+    page_model['person'] = load_table('tbl_person')
+    page_model['selection'] = load_table('tbl_person_selection')
+    
     update_treeview()
 
 def on_treeview_dbl_clicked(tv, item):
@@ -76,36 +87,98 @@ def on_add(dlg, entries, tags):
     update_treeview()
 
 def on_add_line_clicked():
-    column_info = page_model['column_info']
-    show_entry_dlg(True, ['' for _ in column_info], column_info, on_add)
+    mid_list = get_selected_persons(page_model['selection'])    
+    random.shuffle(mid_list)
+    
+    pos_count = desk_count * desk_size
+    av_pos = list(range(pos_count))
+    plan = np.zeros((desk_count, desk_size), dtype = np.int64)
+    
+    for i in range(min(pos_count, len(mid_list))):
+        p = random.sample(av_pos, 1)[0]
+        
+        av_pos.remove(p)
+        plan[p // desk_size, p % desk_size] = mid_list[i]
+    
+    records = []
+    
+    for i in range(desk_size):
+        r = {}
+        r['neid'] = r['display'] = i + 1
+        
+        for j in range(desk_count):
+            r[f"val{j + 1}"] = plan[j, i]
+        
+        records.append(r)
+    
+    page_model['backbone'] = pd.DataFrame(records, columns = ['neid', 'display'] + [f"val{i + 1}" for i in range(desk_count)])
+    update_treeview()
 
 def on_save_db_clicked():
+    dlg = tk.Toplevel()
+    dlg.title('Add Event')
+
+    evar = tk.StringVar(dlg, value = '')
+    ent = tk.Entry(dlg, textvariable = evar)
+    
+    tk.Label(dlg, text = 'Event Name: ').grid(row = 0, column = 0)
+    ent.grid(row = 0, column = 1)
+    
+    entries = { 'title': evar }
+    tk.Button(dlg, text = 'Add', command = lambda: on_add_event(dlg, entries)).grid(row = 1, column = 1)
+
+def on_add_event(dlg, entries):
+    title = entries['title'].get()
+    
+    if title == '':
+        messagebox.showerror('Error', 'Event name should not be empty string.')
+        dlg.destroy()
+        return
+    
+    dlg.destroy()
+    
     df = page_model['backbone']
     ev_df = load_table('tbl_event', 'display')
+    person_ev_df = load_table('tbl_person_event')
     
     eid = max(list(ev_df['eid'])) + 1 if len(ev_df) > 0 else 1
     display = max(list(ev_df['display'])) + 1 if len(ev_df) > 0 else 1
     
-    for _, row in df.iterrows():
-        rec = {
-            'eid': eid,
-            'title': row['val1'], # The first field of New Event record is translated into the Event Name
-            'display': display
-        }
-        ev_df = pd.concat([ev_df, pd.Series(rec).to_frame().T], ignore_index = True)
-        
-        eid += 1
-        display += 1
+    rec = {
+        'eid': eid,
+        'title': title,
+        'display': display
+    }
+    ev_df = pd.concat([ev_df, pd.Series(rec).to_frame().T], ignore_index = True)
+    
+    for _, r in df.iterrows():
+        for i in range(desk_count):
+            mid = int(null_or(r[f"val{i + 1}"], 0))
+            if mid <= 0: continue
+            
+            rec = {
+                'eid': eid,
+                'mid': mid,
+                'val': i + 1
+            }
+            person_ev_df = pd.concat([person_ev_df, pd.Series(rec).to_frame().T], ignore_index = True)            
     
     if not save_table('tbl_event', ev_df):
         messagebox.showerror('Error', 'Failed to save tbl_event.')
         return
+    
+    if not save_table('tbl_person_event', person_ev_df):
+        messagebox.showerror('Error', 'Failed to save tbl_person_event.')
+        return
+    
+    page_model['backbone'] = df = df.drop(df.index)
     
     if not save_table('tbl_new_event', df):
         messagebox.showerror('Error', 'Failed to save tbl_new_event.')
         return
 
     messagebox.showinfo('Success', 'Saved database successfully.')
+    update_treeview()
 
 def on_edit(dlg, entries, tags):
     tv = page_model['treeview']
@@ -144,11 +217,19 @@ def update_treeview(callback = None):
         tv.insert(
             '', 'end', values = tuple(
                 [i + 1] +
-                [null_or(row[f"val{k + 1}"], '') for k in range(new_event_col_count)]
+                [get_cell_text(null_or(row[f"val{k + 1}"], '')) for k in range(desk_count)]
             )
         )
 
     if callback: callback()
+
+def get_cell_text(mid):
+    if mid == '': return ''
+    
+    person = get_person(page_model['person'], mid)
+    if person is None: return ''
+    
+    return person['surname'] + ' ' + person['forename'] + '\n' + str(mid)
 
 def on_export_clicked():
     xls_path = filedialog.asksaveasfilename(title = 'Select an Excel file', defaultextension = '.xlsx')

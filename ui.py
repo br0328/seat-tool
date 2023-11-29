@@ -36,8 +36,8 @@ def create_tab(master, name, callback):
     return tab
 
 # Create a Treeview widget configured by column information and double-click callback function
-def create_treeview(master, column_info, dbl_click_callback):
-    tv = ttk.Treeview(master, columns = [key for key, _ in column_info], show = 'headings')
+def create_treeview(master, column_info, dbl_click_callback, style = 'Treeview'):    
+    tv = ttk.Treeview(master, columns = [key for key, _ in column_info], show = 'headings', style = style)
 
     for key, info in column_info:
         regularize_dict(info, {
