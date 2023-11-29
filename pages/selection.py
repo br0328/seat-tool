@@ -47,7 +47,7 @@ def init_tab(notebook):
     on_tab_selected()
 
 def on_tab_selected():
-    person_df = load_table('tbl_person', 'display')
+    person_df = load_table('tbl_person', 'surname, forename, mid')
     person_match_df = load_table('tbl_person_selection')
     
     records = []

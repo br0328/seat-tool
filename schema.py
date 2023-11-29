@@ -5,10 +5,11 @@
 schemas = {
     'comment': '''
         CREATE TABLE IF NOT EXISTS tbl_comment (
-            iid INT NOT NULL,
-            col TEXT NOT NULL,
+            tid INT NOT NULL,
+            mid INT NOT NULL,
+            cid INT NOT NULL,
             val TEXT,
-            PRIMARY KEY (iid, col)
+            PRIMARY KEY (tid, mid, cid)
         )
         ''',
 

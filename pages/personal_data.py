@@ -19,7 +19,7 @@ page_model = {
         ('surname', { 'title': 'Surname', 'editable': True }),
         ('forename', { 'title': 'Forename', 'editable': True }),
         ('mid', { 'title': 'Member-ID', 'editable': True, 'dtype': int }),
-        ('branch', { 'title': 'Branches', 'editable': True, 'dtype': int })
+        ('branch', { 'title': 'Branches', 'editable': True, 'dtype': str })
     ],
     'history': [],
     'history_pos': 0,
@@ -50,9 +50,10 @@ def init_tab(notebook):
             'Redo': { 'click': on_redo_clicked }
         }
     )
-    tv.tag_configure('dup_full', background = 'orange')
-    tv.tag_configure('dup_name', background = 'salmon')
-    tv.tag_configure('dup_mid', background = 'light blue')
+    tv.tag_configure('dup_full', background = 'salmon')
+    tv.tag_configure('dup_name', background = 'light blue')
+    tv.tag_configure('dup_mid', background = 'orange')
+    tv.tag_configure('null_mid', background = 'pink')
     
     page_model['treeview'] = tv
     on_tab_selected()
@@ -70,7 +71,7 @@ def on_treeview_dbl_clicked(tv, item):
     
     for i, ci in enumerate(page_model['column_info']):
         key, info = ci        
-        v = values[i] if key != 'branch' else values[i][6:]
+        v = values[i]
         
         default_values.append(v)
     
@@ -139,7 +140,6 @@ def on_load_excel_clicked():
         df = pd.read_excel(xls_path)
         df = df.rename(columns = {'Forename': 'forename', 'Surname': 'surname', 'Member_ID': 'mid', 'Branch': 'branch'})        
         
-        df['branch'] = df['branch'].apply(lambda x: int(x[6:]))
         df['display'] = range(1, len(df) + 1)
     except Exception:
         messagebox.showerror('Error', 'Error loading Excel file.')
@@ -163,32 +163,15 @@ def on_import_csv_clicked():
     if csv_path is None or not os.path.exists(csv_path): return
     
     try:
-        df = pd.read_csv(csv_path, usecols = ['Forename', 'Surname', 'Member_ID', 'Branch'])
+        df = pd.read_csv(csv_path)
         
-        df = df.rename(columns = {'Forename': 'forename', 'Surname': 'surname', 'Member_ID': 'mid', 'Branch': 'branch'})
+        df = df.rename(columns = {'Vorname': 'forename', 'Nachname': 'surname', 'Mitgliedernummer': 'mid', 'Branche': 'branch'})        
         df['display'] = range(1, len(df) + 1)
-
-        if df['mid'].isnull().any():
-            max_mid = df['mid'].max()
-            mid = max_mid + 1 if pd.notna(max_mid) else 1
-        
-            messagebox.showerror(
-                'Import Error',
-                'There are entries without Member_ID in the CSV file. Please add a Member_ID in Editor X and export the CSV file again.\n'
-                f'The next available Member_ID is: {mid}'
-            )
-            return
 
         try:
             df['mid'] = pd.to_numeric(df['mid'], errors = 'coerce').fillna(0).astype('int64')
         except pd.errors.IntCastingNaNError as e:
             messagebox.showerror('Import Error', 'Non-numeric values in the Member_ID column.')
-            return
-        
-        try:
-            df['branch'] = df['branch'].apply(lambda x: int(x[6:]))
-        except Exception:
-            messagebox.showerror('Import Error', 'Error in Branch column.')
             return
     except Exception:
         messagebox.showerror('Error', 'Error loading CSV file.')
@@ -243,11 +226,18 @@ def on_redo_clicked():
 
 def on_save_database():
     df = page_model['backbone']
-    invalids = set(df['dup_full']) | set(df['dup_name']) | set(df['dup_mid'])
     
-    if True in invalids:
-        messagebox.showerror('Error', 'There exist(s) invalid record(s).\nPlease fix and retry.')
+    if True in set(df['null_mid']):
+        messagebox.showerror('Error', 'There exist(s) row(s) with null Member-ID(s).\nPlease fix and retry.')
         return
+    
+    if True in (set(df['dup_full']) | set(df['dup_mid'])):
+        messagebox.showerror('Error', 'There exist rows with duplicated Member-IDs.\nPlease fix and retry.')
+        return
+    
+    if True in set(df['dup_name']):
+        if not messagebox.askyesno('Duplicated Name', 'There exist rows with the same name.\nWill you continue to save?'):
+            return
 
     ev_cols = [col for col in sorted(list(df.columns)) if col.startswith('Event-')]    
     person_records, ev_records, person_ev_records, match_records, no_match_records, never_match_records, sel_records = [], [], [], [], [], [], []
@@ -301,11 +291,14 @@ def update_treeview(callback = None):
     tv.delete(*tv.get_children())
 
     df = page_model['backbone']
-    
+    page_model['backbone'] = df = df.sort_values(by = ['surname', 'forename', 'mid'])
+    df.reset_index(drop = True, inplace = True)
+
     df['dup_full'] = df.duplicated(subset = ['forename', 'surname', 'mid'], keep = False)
     df['dup_name'] = df.duplicated(subset = ['forename', 'surname'], keep = False)
     df['dup_mid'] = df.duplicated(subset = ['mid'], keep = False)
-        
+    df['null_mid'] = df['mid'].isnull()
+
     for i, row in df.iterrows():
         if row['dup_full']:
             tags = ('dup_full',)
@@ -313,12 +306,14 @@ def update_treeview(callback = None):
             tags = ('dup_name',)
         elif row['dup_mid']:
             tags = ('dup_mid',)
+        elif row['null_mid']:
+            tags = ('null_mid',)
         else:
             tags = ()
 
         tv.insert(
             '', 'end', values = (
-                i + 1, row['surname'], row['forename'], row['mid'], f"Branch{row['branch']}"
+                i + 1, row['surname'], row['forename'], row['mid'], row['branch']
             ),
             tags = tags
         )

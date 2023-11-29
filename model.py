@@ -10,7 +10,8 @@ import os
 
 glob_model = {
     'local_conn': None, # Global variable for local db connection (It keeps alive for the whole app process)
-    'tab_callback': {} # Callback functions for tab pages opening
+    'tab_callback': {}, # Callback functions for tab pages opening,
+    'root': None
 }
 
 # Load Sqlite3 db if exists,
@@ -67,3 +68,18 @@ def save_table(tbl, df):
         res = False
     
     return res
+
+def get_comment(comm_df, tid, mid, cid):
+    for _, r in comm_df.iterrows():
+        if int(r['tid']) == int(tid) and int(r['mid']) == int(mid) and int(r['cid']) == int(cid): return r['val']
+    
+    return None
+
+def get_person(person_df, mid):
+    try:
+        for _, r in person_df.iterrows():
+            if int(r['mid']) == int(mid): return r
+    except Exception:
+        pass
+    
+    return None

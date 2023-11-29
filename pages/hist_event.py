@@ -22,7 +22,7 @@ page_model = {
 
 def init_tab(notebook):
     page_model['tab'] = create_tab(notebook, 'Hist-Events', on_tab_selected)
-    on_tab_selected()
+    on_tab_selected()    
 
 def on_tab_selected():
     page_model['evdf'] = load_table('tbl_event', 'display')
@@ -38,7 +38,7 @@ def heavy_refresh():
             but.destroy()
     
     ev_df = page_model['evdf']
-    person_df = load_table('tbl_person', 'display')
+    person_df = load_table('tbl_person', 'surname, forename, mid')
     person_ev_df = load_table('tbl_person_event')
     
     page_model['column_info'] = [
@@ -86,7 +86,64 @@ def heavy_refresh():
     df = pd.DataFrame(records, columns = ['surname', 'forename', 'mid'] + [f"ev{i}" for i in range(page_model['evcount'])])
     page_model['backbone'] = df
     
+    page_model['treeview'].bind(get_shortcut_button(), on_shortcut_clicked)
     update_treeview()
+
+def on_shortcut_clicked(ev):
+    tv = page_model['treeview']
+    popup_menu = None
+    
+    try:
+        region = tv.identify('region', ev.x, ev.y)
+        
+        if region == 'cell':
+            ev_df = page_model['evdf']
+            col_name = tv.column(tv.identify_column(ev.x), 'id')
+            col_id = int(col_name[2:])
+
+            popup_menu = tk.Menu(page_model['tab'], tearoff = 0)
+            popup_menu.add_command(label = f"Edit {ev_df.iloc[col_id]['title']}", command = lambda: on_edit_column_clicked(col_id))
+            popup_menu.add_command(label = f"Delete {ev_df.iloc[col_id]['title']}", command = lambda: on_delete_column_clicked(col_id))
+
+            popup_menu.tk_popup(ev.x_root, ev.y_root)
+    finally:
+        if popup_menu is not None: popup_menu.grab_release()
+
+def on_edit_column_clicked(ev_id):
+    ev_df = page_model['evdf']
+    
+    dlg = tk.Toplevel()
+    dlg.title('Edit Event')
+
+    evar = tk.StringVar(dlg, value = ev_df.iloc[ev_id]['title'])
+    ent = tk.Entry(dlg, textvariable = evar)
+    
+    tk.Label(dlg, text = 'Event Name: ').grid(row = 0, column = 0)
+    ent.grid(row = 0, column = 1)
+    
+    entries = { 'title': evar }
+    tk.Button(dlg, text = 'Save', command = lambda: on_edit_column(dlg, entries, ev_id)).grid(row = 1, column = 1)
+
+def on_edit_column(dlg, entries, ev_id):    
+    title = entries['title'].get()
+    
+    if title == '':
+        messagebox.showerror('Error', 'Event name should not be empty string.')
+        dlg.destroy()
+        return
+    
+    ev_df = page_model['evdf']
+    ev_df.at[ev_id, 'title'] = title    
+    
+    dlg.destroy()
+    heavy_refresh()
+    
+def on_delete_column_clicked(ev_id):
+    ev_df = page_model['evdf']
+    
+    if messagebox.askyesno('Delete Event', 'Are you sure to delete?'):
+        page_model['evdf'] = ev_df.drop([ev_id]).reset_index(drop = True)
+        heavy_refresh()
 
 def on_treeview_dbl_clicked(tv, item):
     if not item:
@@ -127,9 +184,9 @@ def on_add_column_clicked():
     ent.grid(row = 0, column = 1)
     
     entries = { 'title': evar }
-    tk.Button(dlg, text = 'Add', command = lambda: on_add(dlg, entries)).grid(row = 1, column = 1)
+    tk.Button(dlg, text = 'Add', command = lambda: on_add_column(dlg, entries)).grid(row = 1, column = 1)
 
-def on_add(dlg, entries):
+def on_add_column(dlg, entries):
     title = entries['title'].get()
     ev_df = page_model['evdf']
     

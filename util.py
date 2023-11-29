@@ -3,6 +3,7 @@
 """
 
 import pandas as pd
+import platform
 
 def regularize_dict(d, default_dict):
     for k, v in default_dict.items():
@@ -42,3 +43,11 @@ def get_int_nzoe(val):
         return int(val)
     except Exception:
         return 0
+
+def get_shortcut_button():
+    system = platform.system().lower()
+    
+    if system == 'windows' or 'linux':
+        return '<Button-3>'
+    else:
+        return '<Button-2>'

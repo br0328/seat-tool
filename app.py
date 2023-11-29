@@ -28,7 +28,7 @@ def on_tab_changed(e):
 if not os.path.exists('./out/'): os.mkdir('./out/')
 
 # UI root implementation
-root = tk.Tk()
+glob_model['root'] = root = tk.Tk()
 root.title("Seating Generation")
 root.update_idletasks()
 

@@ -2,11 +2,30 @@
 """ Common UI functions based on TkInter
 """
 
-from tkinter import filedialog, messagebox, simpledialog
+from tkinter import messagebox
 from tkinter import ttk
 from model import *
 from util import *
 import tkinter as tk
+
+class HoverInfo:
+    def __init__(self, master):
+        self.master = master
+        self.tooltip = None
+        self.hovering = False
+
+    def show_tooltip(self, text, x, y):
+        if not self.hovering:
+            self.tooltip = tk.Toplevel(self.master)
+            self.tooltip.wm_overrideredirect(True)
+            self.tooltip.wm_geometry(f"+{x}+{y}")
+            label = tk.Label(self.tooltip, text = text, background = "#ffffe0", relief = "solid", borderwidth = 1)
+            label.pack(ipadx = 1)
+
+    def hide_tooltip(self):
+        if self.tooltip:
+            self.tooltip.destroy()
+            self.tooltip = None
 
 # Create a tab page
 def create_tab(master, name, callback):
