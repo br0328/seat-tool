@@ -4,6 +4,7 @@
 
 from tkinter import filedialog, messagebox
 from constant import *
+from engine import *
 from model import *
 from util import *
 from ui import *
@@ -21,7 +22,11 @@ page_model = {
         for i in range(1, desk_count + 1)
     ],
     'person': None,
-    'selection': None
+    'selection': None,
+    'match': None,
+    'no-match': None,
+    'never-match': None,
+    'event': None
 }
 
 def init_tab(notebook):
@@ -51,6 +56,10 @@ def on_tab_selected():
     page_model['backbone'] = load_table('tbl_new_event', 'display')
     page_model['person'] = load_table('tbl_person')
     page_model['selection'] = load_table('tbl_person_selection')
+    page_model['match'] = load_table('tbl_person_match')
+    page_model['no-match'] = load_table('tbl_person_no_match')
+    page_model['never-match'] = load_table('tbl_person_never_match')
+    page_model['event'] = load_table('tbl_person_event')
     
     update_treeview()
 
@@ -87,18 +96,16 @@ def on_add(dlg, entries, tags):
     update_treeview()
 
 def on_add_line_clicked():
-    mid_list = get_selected_persons(page_model['selection'])    
-    random.shuffle(mid_list)
+    engine = Engine(page_model['person'], page_model['selection'], page_model['event'], page_model['match'], page_model['no-match'], page_model['never-match'])
+    res_df = engine.calculate()
     
-    pos_count = desk_count * desk_size
-    av_pos = list(range(pos_count))
     plan = np.zeros((desk_count, desk_size), dtype = np.int64)
+    dcount = np.zeros(desk_count, dtype = np.int64)
     
-    for i in range(min(pos_count, len(mid_list))):
-        p = random.sample(av_pos, 1)[0]
-        
-        av_pos.remove(p)
-        plan[p // desk_size, p % desk_size] = mid_list[i]
+    for _, r in res_df.iterrows():
+        d = r['val'] - 1
+        plan[d, dcount[d]] = r['mid']
+        dcount[d] += 1
     
     records = []
     
@@ -171,6 +178,7 @@ def on_add_event(dlg, entries):
         messagebox.showerror('Error', 'Failed to save tbl_person_event.')
         return
     
+    page_model['event'] = person_ev_df
     page_model['backbone'] = df = df.drop(df.index)
     
     if not save_table('tbl_new_event', df):

@@ -134,7 +134,7 @@ def on_comment(dlg, entries, is_add, mid, cid):
         }
         page_model['comment'] = pd.concat([comm_df, pd.Series(rec_dict).to_frame().T], ignore_index = True)
     else:
-        idx = comm_df[(comm_df['tid'] == 0) & (comm_df['mid'] == mid) & (comm_df['cid'] == cid)].index[0]
+        idx = comm_df[(comm_df['tid'] == page_tid) & (comm_df['mid'] == mid) & (comm_df['cid'] == cid)].index[0]
         comm_df.at[idx, 'val'] = comm        
     
     dlg.destroy()
@@ -166,9 +166,9 @@ def on_enter(ev):
         
         if msg == '': return
         
-        x = tv.winfo_rootx()
-        y = tv.winfo_rooty()
-
+        x = tv.winfo_pointerx() + 10
+        y = tv.winfo_pointery() + 10
+        
         page_model['hoverdlg'].show_tooltip(msg, x, y)
     except Exception:
         pass
