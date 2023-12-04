@@ -298,7 +298,7 @@ class Engine:
         df_satis_nomatch_relevant_non_zero[['ID1', 'ID2']] = np.sort(df_satis_nomatch_relevant_non_zero[['ID1', 'ID2']].values, axis=1)  # Sort the 'ID1' and 'ID2' columns
         df_satis_nomatch_relevant_non_zero = df_satis_nomatch_relevant_non_zero[df_satis_nomatch_relevant_non_zero['Value'] != 0]   # Only keep the rows where 'Value' is non-zero
         df_satis_nomatch_relevant_non_zero.drop_duplicates(inplace=True)   # Remove duplicates
-        df_satis_nomatch_relevant_non_zero['Konflikt-Art'] = 'Unerwünschte Paarung'
+        df_satis_nomatch_relevant_non_zero['Konflikt-Art'] = 'Unwanted Matching'
     
         # Check which desired pairings were not realized
         #---------------------------------------------------------------------------------
