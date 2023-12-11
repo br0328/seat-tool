@@ -18,7 +18,7 @@ schemas = {
             mid INT NOT NULL,
             surname TEXT NOT NULL,
             forename TEXT NOT NULL,
-            branch INT NOT NULL,
+            branch TEXT NOT NULL,
             display INT NOT NULL,
             PRIMARY KEY (mid)
         )

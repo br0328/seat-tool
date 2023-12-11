@@ -36,8 +36,8 @@ def create_tab(master, name, callback):
     return tab
 
 # Create a Treeview widget configured by column information and double-click callback function
-def create_treeview(master, column_info, dbl_click_callback, style = 'Treeview'):    
-    tv = ttk.Treeview(master, columns = [key for key, _ in column_info], show = 'headings', style = style)
+def create_treeview(master, column_info, dbl_click_callback, style = 'Treeview', disable_select = False):    
+    tv = ttk.Treeview(master, columns = [key for key, _ in column_info], show = 'headings', style = style, selectmode = 'none' if disable_select else 'browse')
 
     for key, info in column_info:
         regularize_dict(info, {
@@ -51,7 +51,7 @@ def create_treeview(master, column_info, dbl_click_callback, style = 'Treeview')
     vscrollbar.pack(side ='right', fill ='y')
     
     tv.configure(yscrollcommand = vscrollbar.set)    
-    tv.bind('<Double-1>', lambda e: dbl_click_callback(tv, tv.identify_row(e.y)))
+    tv.bind('<Double-1>', lambda e: dbl_click_callback(tv, tv.identify_row(e.y), tv.identify_column(e.x)))
     tv.pack(expand = True, fill = 'both', padx = 10, pady = 10)
 
     return tv, vscrollbar

@@ -45,7 +45,7 @@ def init_tab(notebook):
     create_control_panel(
         master = tab,
         button_info = {
-            'Edit Line': { 'click': on_edit_line_clicked },
+            #'Edit Line': { 'click': on_edit_line_clicked },
             'Save Database': { 'click': on_save_db_clicked }
         }
     )
@@ -94,36 +94,47 @@ def on_shortcut_clicked(ev):
             
             if col_name.startswith('val'):
                 col_id = int(col_name[3:])
-                row_id = tv.item(tv.identify_row(ev.y), 'values')[3]
-                
-                comm = get_comment(page_model['comment'], page_tid, row_id, col_id)                
-                popup_menu = tk.Menu(page_model['tab'], tearoff = 0)
-                
-                if comm is None:
-                    popup_menu.add_command(label = f"Add Comment", command = lambda: on_comment_clicked(True, row_id, col_id, comm))
-                else:
-                    popup_menu.add_command(label = f"Edit Comment", command = lambda: on_comment_clicked(False, row_id, col_id, comm))
-                    
+                item = tv.item(tv.identify_row(ev.y), 'values')
+                row_id = int(item[3])
+                omid = item[4 + col_id]
+                                
+                popup_menu = tk.Menu(page_model['tab'], tearoff = 0)                
+                popup_menu.add_command(label = f"Edit Match Info", command = lambda: on_comment_clicked(row_id, col_id, omid))
                 popup_menu.tk_popup(ev.x_root, ev.y_root)
     finally:
         if popup_menu is not None: popup_menu.grab_release()
 
-def on_comment_clicked(is_add, mid, cid, comm):
+def on_comment_clicked(mid, cid, omid):
+    comm = null_or(get_comment(page_model['comment'], page_tid, mid, cid), '')
+    
     dlg = tk.Toplevel()
-    dlg.title('Add Comment' if is_add else 'Edit Comment')
+    dlg.title('Edit Cell')
 
-    evar = tk.StringVar(dlg, value = '' if is_add else comm)
+    tkvar = tk.StringVar(dlg)
+    choices = set()
+    
+    for _, r in page_model['person'].iterrows():
+        v = f"{r['mid']}: {r['surname']}, {r['forename']}"
+        choices.add(v)
+        if str(r['mid']) == str(omid): tkvar.set(v)
+
+    dropdown = tk.OptionMenu(dlg, tkvar, *choices)
+    tk.Label(dlg, text="Choose a person").grid(row = 0, column = 0)
+    dropdown.grid(row = 0, column = 1)
+
+    evar = tk.StringVar(dlg, value = comm)
     ent = tk.Entry(dlg, textvariable = evar)
     
-    tk.Label(dlg, text = 'Comment: ').grid(row = 0, column = 0)
-    ent.grid(row = 0, column = 1)
+    tk.Label(dlg, text = 'Comment: ').grid(row = 1, column = 0)
+    ent.grid(row = 1, column = 1)
     
-    entries = { 'val': evar }
-    tk.Button(dlg, text = 'Add' if is_add else 'Save', command = lambda: on_comment(dlg, entries, is_add, mid, cid)).grid(row = 1, column = 1)
+    entries = { 'comm': evar, 'person': tkvar }
+    tk.Button(dlg, text = 'Save', command = lambda: on_comment(dlg, entries, mid, cid)).grid(row = 2, column = 1)
 
-def on_comment(dlg, entries, is_add, mid, cid):
-    comm = entries['val'].get()    
+def on_comment(dlg, entries, mid, cid):
+    comm = entries['comm'].get()
     comm_df = page_model['comment']
+    is_add = get_comment(comm_df, page_tid, mid, cid) is None
     
     if is_add:
         rec_dict = {
@@ -134,10 +145,26 @@ def on_comment(dlg, entries, is_add, mid, cid):
         }
         page_model['comment'] = pd.concat([comm_df, pd.Series(rec_dict).to_frame().T], ignore_index = True)
     else:
-        idx = comm_df[(comm_df['tid'] == page_tid) & (comm_df['mid'] == mid) & (comm_df['cid'] == cid)].index[0]
-        comm_df.at[idx, 'val'] = comm        
+        for _, r in comm_df.iterrows():
+            if int(r['tid']) == int(page_tid) and int(r['mid']) == int(mid) and int(r['cid']) == int(cid):
+                idx = r.name
+                break
+        
+        comm_df.at[idx, 'val'] = comm
     
+    choice = null_or(entries['person'].get(), '')
+    
+    if choice != '':
+        omid = int(choice.split(':')[0])
+    else:
+        omid = 0
+        
+    df = page_model['backbone']
+    idx = df[df['mid'] == mid].index[0]
+    df.at[idx, f"val{cid}"] = omid
+
     dlg.destroy()
+    update_treeview()
 
 def on_enter(ev):
     page_model['hoverdlg'].hide_tooltip()
@@ -154,11 +181,13 @@ def on_enter(ev):
         
         msg = ''        
         person = get_person(page_model['person'], person_id)        
-        if person is not None: msg = person['surname'] + ' ' + person['forename']
+        if person is not None: msg = 'Name: ' + person['surname'] + ' ' + person['forename']
         
         comm = get_comment(page_model['comment'], page_tid, row_id, col_id) or ''
         
         if comm != '':
+            comm = 'Comment: ' + comm
+            
             if msg == '':
                 msg = comm
             else:
@@ -176,24 +205,20 @@ def on_enter(ev):
 def on_leave(event):
     page_model['hoverdlg'].hide_tooltip()
     
-def on_treeview_dbl_clicked(tv, item):
-    if not item:
-        messagebox.showerror('Error', 'No row selected.')
+def on_treeview_dbl_clicked(tv, item, col_id):
+    if not item or not col_id: return
+    
+    try:
+        col_name = tv.column(col_id, 'id')
+        col_id = int(col_name[3:])
+    except Exception:
         return
-
-    values = tv.item(item, 'values')
-    default_values = []
-    
-    for i, ci in enumerate(page_model['column_info']):
-        key, info = ci
-        v = values[i]
-        
-        if key.startswith('val'):
-            v = int(v) if v != '' else 0
-        
-        default_values.append(v)
-    
-    show_entry_dlg(False, default_values, page_model['column_info'], on_edit, tags = (item, ))
+            
+    item = tv.item(item, 'values')
+    row_id = int(item[3])
+    omid = item[4 + col_id]
+                    
+    on_comment_clicked(row_id, col_id, omid)
 
 def on_edit_line_clicked():
     tv = page_model['treeview']

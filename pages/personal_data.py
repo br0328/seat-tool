@@ -39,9 +39,9 @@ def init_tab(notebook):
         button_info = {
             'Load SQL\ndatabase': { 'click': on_load_database_clicked },
             'Load Excel\nDatabase': { 'click': on_load_excel_clicked },
-            'Import CSV\nDatabase': { 'click': on_import_csv_clicked },
+            'Import contacts\nfrom CSV': { 'click': on_import_csv_clicked },
             'Save\nDatabase': { 'click': on_save_database },
-            'Add new\nColumn': { 'click': None },
+            #'Add new\nColumn': { 'click': None },
             'Add new Line': { 'click': on_add_line_clicked },
             'Edit Line': { 'click': on_edit_line_clicked },
             'Delete Line(s)': { 'click': on_delete_line_clicked },
@@ -61,7 +61,7 @@ def init_tab(notebook):
 def on_tab_selected():
     on_load_database_clicked(True)
 
-def on_treeview_dbl_clicked(tv, item):
+def on_treeview_dbl_clicked(tv, item, col_id):
     if not item:
         messagebox.showerror('Error', 'No row selected.')
         return
@@ -163,25 +163,40 @@ def on_import_csv_clicked():
     if csv_path is None or not os.path.exists(csv_path): return
     
     try:
-        df = pd.read_csv(csv_path)
-        
-        df = df.rename(columns = {'Vorname': 'forename', 'Nachname': 'surname', 'Mitgliedernummer': 'mid', 'Branche': 'branch'})        
-        df['display'] = range(1, len(df) + 1)
+        contact_df = pd.read_csv(csv_path)        
+        contact_df = contact_df.rename(columns = {'Vorname': 'forename', 'Nachname': 'surname', 'Mitgliedernummer': 'mid', 'Branche': 'branch'})
 
         try:
-            df['mid'] = pd.to_numeric(df['mid'], errors = 'coerce').fillna(0).astype('int64')
+            contact_df['mid'] = pd.to_numeric(contact_df['mid'], errors = 'coerce').fillna(0).astype('int64')
+            
+            if len(contact_df[contact_df['mid'] == 0]) > 0:
+                messagebox.showerror('Import Error', 'There exists a contact with MemberID=0, which is not allowed.')
+                return                
+            
+            df = page_model['backbone']
+            did = max(list(df['display'])) + 1 if len(df) > 0 else 1
+            
+            for i, cr in contact_df.iterrows():
+                r = {
+                    'forename': cr['forename'],
+                    'surname': cr['surname'],
+                    'mid': cr['mid'],
+                    'branch': cr['branch'],
+                    'display': did + i
+                }
+                df = pd.concat([df, pd.Series(r).to_frame().T], ignore_index = True)
+            
+            page_model['backbone'] = df
+            page_model['is_excel'] = False
+            
+            reset_history()
+            update_treeview(lambda: messagebox.showinfo('Success', 'Contacs imported successfully.'))            
         except pd.errors.IntCastingNaNError as e:
             messagebox.showerror('Import Error', 'Non-numeric values in the Member_ID column.')
             return
     except Exception:
         messagebox.showerror('Error', 'Error loading CSV file.')
         return
-
-    page_model['backbone'] = df
-    page_model['is_excel'] = False
-    
-    reset_history()
-    update_treeview(lambda: messagebox.showinfo('Success', 'CSV loaded successfully.'))
 
 def on_add_line_clicked():
     column_info = page_model['column_info']
@@ -263,7 +278,7 @@ def on_save_database():
     if page_model['is_excel']:
         for i, col in enumerate(ev_cols):
             ev_records.append((
-                i + 1, col, i + 1                
+                i + 1, col[6:], i + 1                
             ))
 
     person_df = pd.DataFrame(person_records, columns = ['mid', 'surname', 'forename', 'branch', 'display'])

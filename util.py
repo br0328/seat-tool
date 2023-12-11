@@ -27,7 +27,7 @@ def check_ci_validation(ci, val):
     return res, None
 
 def null_or(val, def_val):
-    if pd.isna(val) or pd.isnull(val): return def_val
+    if val is None or pd.isna(val) or pd.isnull(val): return def_val
     return val
 
 def int_nonzero_or_empty(val):

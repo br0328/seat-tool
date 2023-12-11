@@ -58,11 +58,11 @@ def heavy_refresh():
     page_model['buttons'] = create_control_panel(
         master = page_model['tab'],
         button_info = {
-            'Edit line': { 'click': on_edit_line_clicked },
+            #'Edit line': { 'click': on_edit_line_clicked },
             'Add new column': { 'click': on_add_column_clicked },
             'Save database': { 'click': on_save_db_clicked }
         }
-    )    
+    )
     page_model['evcount'] = len(ev_df)
     records = []
     
@@ -102,8 +102,9 @@ def on_shortcut_clicked(ev):
             col_id = int(col_name[2:])
 
             popup_menu = tk.Menu(page_model['tab'], tearoff = 0)
-            popup_menu.add_command(label = f"Edit {ev_df.iloc[col_id]['title']}", command = lambda: on_edit_column_clicked(col_id))
-            popup_menu.add_command(label = f"Delete {ev_df.iloc[col_id]['title']}", command = lambda: on_delete_column_clicked(col_id))
+            popup_menu.add_command(label = f"Edit Column {ev_df.iloc[col_id]['title']}", command = lambda: on_edit_column_clicked(col_id))
+            popup_menu.add_command(label = f"Delete Column {ev_df.iloc[col_id]['title']}", command = lambda: on_delete_column_clicked(col_id))
+            popup_menu.add_command(label = 'Edit Cell Value', command = lambda: on_treeview_dbl_clicked(tv, tv.identify_row(ev.y), tv.identify_column(ev.x)))
 
             popup_menu.tk_popup(ev.x_root, ev.y_root)
     finally:
@@ -145,33 +146,37 @@ def on_delete_column_clicked(ev_id):
         page_model['evdf'] = ev_df.drop([ev_id]).reset_index(drop = True)
         heavy_refresh()
 
-def on_treeview_dbl_clicked(tv, item):
-    if not item:
-        messagebox.showerror('Error', 'No row selected.')
+def on_treeview_dbl_clicked(tv, item, col_id):
+    if not item or not col_id: return
+
+    try:
+        col_name = tv.column(col_id, 'id')
+        col_idx = int(col_name[2:])
+    except Exception:
         return
 
-    values = tv.item(item, 'values')
-    default_values = []
+    v = tv.item(item, 'values')[col_idx + 4]
     
-    for i, ci in enumerate(page_model['column_info']):
-        key, info = ci
-        v = values[i]
-        
-        if key.startswith('ev'):
-            v = int(v) if v != '' else 0
-        
-        default_values.append(v)
-    
-    show_entry_dlg(False, default_values, page_model['column_info'], on_edit, tags = (item, ))
+    dlg = tk.Toplevel()
+    dlg.title('Edit Cell')
 
-def on_edit_line_clicked():
-    tv = page_model['treeview']
+    evar = tk.StringVar(dlg, value = v)
+    ent = tk.Entry(dlg, textvariable = evar)
     
-    try:
-        item = tv.selection()[0]
-        on_treeview_dbl_clicked(tv, item)
-    except Exception:
-        messagebox.showerror('Error', 'Please select a row first.')
+    tk.Label(dlg, text = 'Value: ').grid(row = 0, column = 0)
+    ent.grid(row = 0, column = 1)
+    
+    entries = { 'title': evar }
+    tk.Button(dlg, text = 'Save', command = lambda: on_edit_cell(dlg, entries, item, col_idx)).grid(row = 1, column = 1)
+    
+# def on_edit_line_clicked():
+#     tv = page_model['treeview']
+    
+#     try:
+#         item = tv.selection()[0]
+#         on_treeview_dbl_clicked(tv, item)
+#     except Exception:
+#         messagebox.showerror('Error', 'Please select a row first.')
 
 def on_add_column_clicked():
     dlg = tk.Toplevel()
@@ -230,6 +235,22 @@ def on_save_db_clicked():
         return
 
     messagebox.showinfo('Success', 'Saved database successfully.')
+    
+def on_edit_cell(dlg, entries, item, col_idx):
+    tv = page_model['treeview']
+    idx = int(tv.item(item, 'values')[0]) - 1
+    df = page_model['backbone']
+    
+    try:
+        v = int(entries['title'].get())
+    except Exception:
+        messagebox.showerror('Type Error', 'It must be integer value.')
+        return
+        
+    df.at[idx, f"ev{col_idx}"] = v
+    
+    dlg.destroy()
+    update_treeview()
     
 def on_edit(dlg, entries, tags):
     tv = page_model['treeview']

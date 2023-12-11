@@ -63,7 +63,7 @@ def on_tab_selected():
     
     update_treeview()
 
-def on_treeview_dbl_clicked(tv, item):
+def on_treeview_dbl_clicked(tv, item, col_id):
     if not item:
         messagebox.showerror('Error', 'No row selected.')
         return
