@@ -38,7 +38,7 @@ def init_tab(notebook):
     page_model['treeview'], _ = create_treeview(
         master = tab,
         column_info = page_model['column_info'],
-        dbl_click_callback = on_treeview_dbl_clicked,
+        dbl_click_callback = None,#on_treeview_dbl_clicked,
         style = 'ne.Treeview'
     )
     create_control_panel(
@@ -47,7 +47,7 @@ def init_tab(notebook):
             'Generate\nnew event': { 'click': on_add_line_clicked },
             'Add to Hist-event and\nsave database': { 'click': on_save_db_clicked },
             'Export event\nto XLS': { 'click': on_export_clicked },
-            'Import event\nfrom XLS': { 'click': on_import_clicked }
+            #'Import event\nfrom XLS': { 'click': on_import_clicked }
         }
     )
     on_tab_selected()

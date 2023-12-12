@@ -17,7 +17,7 @@ page_model = {
         ('surname', { 'title': 'Surname' }),
         ('forename', { 'title': 'Forename' }),
         ('mid', { 'title': 'Member-ID' }),
-        ('val', { 'title': 'Selection', 'editable': True, 'dtype': int } )
+        #('val', { 'title': 'Selection', 'editable': True, 'dtype': int } )
     ],
     'visibility_button': None,
     'visibility': True
@@ -31,10 +31,15 @@ def init_tab(notebook):
         column_info = page_model['column_info'],
         dbl_click_callback = on_treeview_dbl_clicked
     )
+    # page_model['treeview'], _ = create_checkbox_treeview(
+    #     master = tab,
+    #     column_info = page_model['column_info'],
+    #     dbl_click_callback = on_treeview_dbl_clicked
+    # )
     page_model['visibility_button'] = create_control_panel(
         master = tab,
         button_info = {
-            'Edit Line': { 'click': on_edit_line_clicked },
+            'Toggle selection': { 'click': on_edit_line_clicked },
             'Load selection\nfrom CSV': { 'click': on_import_csv_clicked },
             'Visibility': { 'click': on_visibility_clicked },
             'Save Database': { 'click': on_save_db_clicked }
@@ -44,6 +49,7 @@ def init_tab(notebook):
     page_model['visibility_button']['text'] = 'Show only\nselected lines'
     page_model['visibility'] = True
     
+    page_model['treeview'].tag_configure('checked', background = 'lightgreen')
     on_tab_selected()
 
 def on_tab_selected():
@@ -75,18 +81,14 @@ def on_treeview_dbl_clicked(tv, item, col_id):
         return
 
     values = tv.item(item, 'values')
-    default_values = []
+    df = page_model['backbone']
+    idx = int(values[0]) - 1
     
-    for i, ci in enumerate(page_model['column_info']):
-        key, info = ci
-        v = values[i]
-        
-        if key.startswith('val'):
-            v = int(v) if v != '' else 0
-        
-        default_values.append(v)
+    ov = int_nonzero_or_empty(df.iloc[idx]['val'])
+    nv = 1 if ov == '' else 0
     
-    show_entry_dlg(False, default_values, page_model['column_info'], on_edit, tags = (item, ))
+    df.at[idx, 'val'] = nv
+    update_treeview()
 
 # Assumed that only selected members are listed in the CSV file
 def on_import_csv_clicked():
@@ -94,13 +96,14 @@ def on_import_csv_clicked():
     if csv_path is None or not os.path.exists(csv_path): return
     
     try:
-        df = pd.read_excel(csv_path)
-        df = df.rename(columns = {'Member_ID': 'mid'})
+        df = pd.read_csv(csv_path)
+        df = df.rename(columns = {'Mitgliedernummer': 'mid'})
+        df['mid'] = pd.to_numeric(df['mid'], errors = 'coerce').fillna(0).astype('int64')
     except Exception:
         messagebox.showerror('Error', 'Error loading CSV file.')
         return
     
-    person_df = load_table('tbl_person', 'display')    
+    person_df = load_table('tbl_person', 'surname, forename, mid')
     records = []
     
     for _, person in person_df.iterrows():
@@ -109,7 +112,7 @@ def on_import_csv_clicked():
         v = 0
         
         for _, pm in df.iterrows():
-            if pm['mid'] == mid:
+            if int(pm['mid']) == int(mid):
                 v = 1
                 break
         
@@ -187,10 +190,14 @@ def update_treeview(callback = None):
     df = page_model['backbone']
         
     for i, row in df.iterrows():
+        cv = int_nonzero_or_empty(row['val'])
+        tags = () if cv == '' else ('checked',)
+        
         tv.insert(
             '', 'end', values = (
-                i + 1, row['surname'], row['forename'], row['mid'], int_nonzero_or_empty(row['val'])
+                i + 1, row['surname'], row['forename'], row['mid']#, int_nonzero_or_empty(row['val'])
             )
+            , tags = tags
         )
 
     if callback: callback()

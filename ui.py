@@ -6,6 +6,7 @@ from tkinter import messagebox
 from tkinter import ttk
 from model import *
 from util import *
+import ttkwidgets as ttkw
 import tkinter as tk
 
 class HoverInfo:
@@ -38,6 +39,29 @@ def create_tab(master, name, callback):
 # Create a Treeview widget configured by column information and double-click callback function
 def create_treeview(master, column_info, dbl_click_callback, style = 'Treeview', disable_select = False):    
     tv = ttk.Treeview(master, columns = [key for key, _ in column_info], show = 'headings', style = style, selectmode = 'none' if disable_select else 'browse')
+
+    for key, info in column_info:
+        regularize_dict(info, {
+            'title': '', 'width': 0, 'anchor': 'center', 'editable': False, 'dtype': str
+        })
+        tv.column(key, width = info['width'], anchor = info['anchor'])
+        tv.heading(key, text = info['title'], anchor = 'center')
+
+    # Add an external v-scrollbar
+    vscrollbar = ttk.Scrollbar(master, orient = "vertical", command = tv.yview)
+    vscrollbar.pack(side ='right', fill ='y')
+    
+    tv.configure(yscrollcommand = vscrollbar.set)
+    
+    if dbl_click_callback is not None:
+        tv.bind('<Double-1>', lambda e: dbl_click_callback(tv, tv.identify_row(e.y), tv.identify_column(e.x)))
+
+    tv.pack(expand = True, fill = 'both', padx = 10, pady = 10)
+
+    return tv, vscrollbar
+
+def create_checkbox_treeview(master, column_info, dbl_click_callback):
+    tv = ttkw.CheckboxTreeview(master, columns = [key for key, _ in column_info], show = ('headings', 'tree'), selectmode = 'browse')
 
     for key, info in column_info:
         regularize_dict(info, {
