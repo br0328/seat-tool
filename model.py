@@ -93,3 +93,9 @@ def get_selected_persons(selection_df):
         if int(r['val']) > 0: res.append(int(r['mid']))
 
     return res
+
+def get_eid(event_df, evname):
+    for _, r in event_df.iterrows():
+        if r['title'] == evname: return int(r['eid'])
+
+    return None

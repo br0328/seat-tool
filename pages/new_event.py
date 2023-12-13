@@ -311,7 +311,7 @@ def get_cell_text(mid, for_excel = False):
 
 def on_export_clicked():
     xls_path = filedialog.asksaveasfilename(title = 'Select an Excel file', defaultextension = '.xlsx')
-    if xls_path is None: return
+    if xls_path is None or xls_path == '': return
     
     df = page_model['backbone']
     df = df.drop(['display'], axis = 1)

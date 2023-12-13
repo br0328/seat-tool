@@ -10,6 +10,7 @@ from pages import no_match
 from pages import never_match
 from pages import selection
 from pages import manual
+from pages import edit_event
 from tkinter import ttk
 from model import *
 from util import *
@@ -48,6 +49,7 @@ no_match.init_tab(notebook)
 never_match.init_tab(notebook)
 selection.init_tab(notebook)
 new_event.init_tab(notebook)
+edit_event.init_tab(notebook)
 manual.init_tab(notebook)
 
 notebook.bind("<<NotebookTabChanged>>", on_tab_changed)

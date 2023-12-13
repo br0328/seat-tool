@@ -173,7 +173,7 @@ class Engine:
         self.gruppen_namen = np.empty(self.num_persons)  
         start_index = 0
         
-        for i, b in enumerate(group_sizes, start=1):
+        for i, b in enumerate(group_sizes, start = 1):
             self.gruppen_namen[start_index : start_index + b] = i
             start_index += b  # This line has been added
             
