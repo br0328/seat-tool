@@ -32,8 +32,8 @@ glob_model['root'] = root = tk.Tk()
 root.title("Seating Generation")
 root.update_idletasks()
 
-new_width = root.winfo_width() * 5
-new_height = root.winfo_height() * 4
+new_width = root_width#root.winfo_width() * 5
+new_height = root_height#root.winfo_height() * 4
 
 root.geometry(f"{new_width}x{new_height}")
 

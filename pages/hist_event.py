@@ -13,7 +13,7 @@ page_model = {
     'backbone': None, # Back DataFrame
     'evdf': None, # Event DataFrame
     'treeview': None,
-    'vscroll': None,
+    'scroll': None,
     'column_info': None,
     'buttons': None,
     'evcount': None,
@@ -32,7 +32,8 @@ def on_tab_selected():
 def heavy_refresh():
     if page_model['treeview']:
         page_model['treeview'].destroy()
-        page_model['vscroll'].destroy()
+        page_model['scroll'][0].destroy()
+        page_model['scroll'][1].destroy()
         
         for _, but in page_model['buttons'].items():
             but.destroy()
@@ -50,7 +51,7 @@ def heavy_refresh():
         (f"ev{i}", { 'title': row['title'], 'editable': True, 'dtype': int })
         for i, row in ev_df.iterrows()
     ]
-    page_model['treeview'], page_model['vscroll'] = create_treeview(
+    page_model['treeview'], page_model['scroll'] = create_treeview(
         master = page_model['tab'],
         column_info = page_model['column_info'],
         dbl_click_callback = on_treeview_dbl_clicked

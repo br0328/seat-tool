@@ -37,7 +37,7 @@ def create_tab(master, name, callback):
     return tab
 
 # Create a Treeview widget configured by column information and double-click callback function
-def create_treeview(master, column_info, dbl_click_callback, style = 'Treeview', disable_select = False):    
+def create_treeview(master, column_info, dbl_click_callback, style = 'Treeview', disable_select = False, disable_hscroll = False):
     tv = ttk.Treeview(master, columns = [key for key, _ in column_info], show = 'headings', style = style, selectmode = 'none' if disable_select else 'browse')
 
     for key, info in column_info:
@@ -53,12 +53,21 @@ def create_treeview(master, column_info, dbl_click_callback, style = 'Treeview',
     
     tv.configure(yscrollcommand = vscrollbar.set)
     
+    if not disable_hscroll:
+        # Add an external h-scrollbar
+        hscrollbar = ttk.Scrollbar(master, orient = "horizontal", command = tv.xview)
+        hscrollbar.pack(side ='bottom', fill ='x')
+        
+        tv.configure(xscrollcommand = hscrollbar.set)
+    else:
+        hscrollbar = None
+    
     if dbl_click_callback is not None:
         tv.bind('<Double-1>', lambda e: dbl_click_callback(tv, tv.identify_row(e.y), tv.identify_column(e.x)))
 
     tv.pack(expand = True, fill = 'both', padx = 10, pady = 10)
 
-    return tv, vscrollbar
+    return tv, (vscrollbar, hscrollbar)
 
 def create_checkbox_treeview(master, column_info, dbl_click_callback):
     tv = ttkw.CheckboxTreeview(master, columns = [key for key, _ in column_info], show = ('headings', 'tree'), selectmode = 'browse')

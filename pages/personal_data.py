@@ -138,7 +138,7 @@ def on_load_excel_clicked():
     
     try:
         df = pd.read_excel(xls_path)
-        df = df.rename(columns = {'Forename': 'forename', 'Surname': 'surname', 'Member_ID': 'mid', 'Branch': 'branch'})        
+        df = df.rename(columns = {'Forename': 'forename', 'Surname': 'surname', 'Member_ID': 'mid', 'Branch': 'branch'})
         
         df['display'] = range(1, len(df) + 1)
     except Exception:

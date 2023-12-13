@@ -49,7 +49,8 @@ class Engine:
         self.num_tische = None
         self.gruppen_namen = None
         self.df_optimal_seating = None  # Dataframe containing the optimal assignment of people to tables.
-        self.df_conflicts = None      
+        self.df_conflicts = None
+        self.overall_score = 0
 
     #-----------------------------------------------------------
     # Calculation of the relation matrix: n*n matrix corresponding to the IDs of all registered people
@@ -162,8 +163,8 @@ class Engine:
     #----------------------------------------------------------- 
     def calc_num_tables_num_persons(self):            
         self.num_persons = len(self.id_list)  # Number of people who have logged in
-        self.num_tische = math.ceil(self.num_persons/num_sitzplaetze_tisch) # Number of tables (groups) necessary to meet the number of seats. Decimal fraction is rounded up to the nearest whole number.
-        max_group_size = math.ceil(self.num_persons/self.num_tische)  # Maximum table size (max number of people at one table)
+        self.num_tische = math.ceil(self.num_persons / num_sitzplaetze_tisch) # Number of tables (groups) necessary to meet the number of seats. Decimal fraction is rounded up to the nearest whole number.
+        max_group_size = math.ceil(self.num_persons / self.num_tische)  # Maximum table size (max number of people at one table)
         min_group_size = max_group_size - 1       # Minimum table size (minimum number of people at a table)
         num_grosse_tische = self.num_persons - self.num_tische * min_group_size 
         num_kleine_tische = self.num_tische - num_grosse_tische
@@ -210,8 +211,8 @@ class Engine:
         NUM_GENERATIONS = num_generations
     
         # Create types for fitness and individuals
-        creator.create("FitnessMax", base.Fitness, weights=(1.0,))  # The larger the value, the better the fitness
-        creator.create("Individual", list, fitness=creator.FitnessMax)
+        creator.create("FitnessMax", base.Fitness, weights = (1.0,))  # The larger the value, the better the fitness
+        creator.create("Individual", list, fitness = creator.FitnessMax)
     
         # Create functions to initialize individuals and population
         toolbox = base.Toolbox()
@@ -226,8 +227,8 @@ class Engine:
         toolbox.register("evaluate", self.evaluate)
     
         # Create the population and run the genetic algorithm
-        population = toolbox.population(n=POPULATION_SIZE)
-        result, _ = algorithms.eaSimple(population, toolbox, cxpb=CROSSOVER_RATE, mutpb=MUTATION_RATE, ngen=NUM_GENERATIONS, verbose=False)
+        population = toolbox.population(n = POPULATION_SIZE)
+        result, _ = algorithms.eaSimple(population, toolbox, cxpb = CROSSOVER_RATE, mutpb = MUTATION_RATE, ngen = NUM_GENERATIONS, verbose = False)
     
         # Find the best solution and calculate satisfaction
         best_individual = tools.selBest(result, k=1)[0]
@@ -246,6 +247,8 @@ class Engine:
         self.df_optimal_seating['ID'] = self.id_list
             
         print('df_optimal_seating \n', self.df_optimal_seating)
+        
+        self.overall_score = best_satisfaction
 
     # Check which historical pairings are undesirably recurring
     #---------------------------------------------------------------------------------   
@@ -293,7 +296,7 @@ class Engine:
         stacked_df_satis_nomatch_relevant = df_satis_nomatch_relevant.stack()   # Convert df_bestr_tot_relevant into a series object
         df_satis_nomatch_relevant_non_zero = stacked_df_satis_nomatch_relevant.reset_index()   # Create a DataFrame from the Series object
         df_satis_nomatch_relevant_non_zero.columns = ['ID1', 'ID2', 'Value']   # Rename the columns
-        print(df_satis_nomatch_relevant_non_zero.columns)
+        #print(df_satis_nomatch_relevant_non_zero.columns)
         
         df_satis_nomatch_relevant_non_zero[['ID1', 'ID2']] = np.sort(df_satis_nomatch_relevant_non_zero[['ID1', 'ID2']].values, axis=1)  # Sort the 'ID1' and 'ID2' columns
         df_satis_nomatch_relevant_non_zero = df_satis_nomatch_relevant_non_zero[df_satis_nomatch_relevant_non_zero['Value'] != 0]   # Only keep the rows where 'Value' is non-zero
@@ -355,7 +358,7 @@ class Engine:
         stacked_df_satis_branchen_relevant = df_satis_branchen_relevant.stack()   # Convert df_bestr_tot_relevant into a series object    
         df_satis_branchen_relevant_non_zero = stacked_df_satis_branchen_relevant.reset_index()   # Create a DataFrame from the Series object
         df_satis_branchen_relevant_non_zero.columns = ['ID1', 'ID2', 'Value']   # Rename the columns
-        print(df_satis_branchen_relevant_non_zero.columns)
+        #print(df_satis_branchen_relevant_non_zero.columns)
         
         df_satis_branchen_relevant_non_zero[['ID1', 'ID2']] = np.sort(df_satis_branchen_relevant_non_zero[['ID1', 'ID2']].values, axis=1)  # Sort the 'ID1' and 'ID2' columns
         df_satis_branchen_relevant_non_zero = df_satis_branchen_relevant_non_zero[df_satis_branchen_relevant_non_zero['Value'] != 0]   # Only keep the rows where 'Value' is non-zero
@@ -363,7 +366,7 @@ class Engine:
         df_satis_branchen_relevant_non_zero['Konflikt-Art'] = 'Undesirable industry pairing'
     
         self.df_conflicts = pd.concat([df_bestr_tot_relevant_non_zero, df_satis_nomatch_relevant_non_zero, df_satis_match_missed_non_zero, df_satis_branchen_relevant_non_zero])
-        print(self.df_conflicts)
+        #print(self.df_conflicts)
 
     def show_groups(self):
         grouped = self.df_optimal_seating.groupby('Val')['ID'].apply(list)
@@ -378,4 +381,8 @@ class Engine:
         self.show_groups()
         self.show_conflicts()
         
-        return self.df_optimal_seating.rename(columns = {'ID': 'mid', 'Val': 'val'})
+        return (
+                self.df_optimal_seating.rename(columns = {'ID': 'mid', 'Val': 'val'}),
+                self.df_conflicts.rename(columns = {'ID1': 'id1', 'ID2': 'id2', 'Value': 'val', 'Konflikt-Art': 'conflict'}),
+                self.overall_score
+        )
