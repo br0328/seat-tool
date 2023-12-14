@@ -13,12 +13,13 @@ import numpy as np
 import random
 
 page_model = {
+    'tab': None,
     'backbone': None,
     'treeview': None,
     'topframe': None,
     'dropdown': None,
     'column_info': [
-        ('line', { 'title': 'Line Nr.' })
+        ('line', { 'title': 'No' })
     ] + [
         (f"val{i}", { 'title': f"Table {i}", 'editable': True, 'dtype': str })
         for i in range(1, desk_count + 1)
@@ -30,7 +31,7 @@ page_model = {
 }
 
 def init_tab(notebook):
-    tab = create_tab(notebook, 'Edit-Event', on_tab_selected)
+    page_model['tab'] = tab = create_tab(notebook, 'Edit-Event', on_tab_selected)
     
     st = ttk.Style()
     st.configure('ne.Treeview', rowheight = 40)
@@ -69,12 +70,13 @@ def init_tab(notebook):
     tv.bind("<ButtonPress-1>", on_move_down)
     tv.bind("<ButtonRelease-1>", on_move_up, add='+')
     tv.bind("<B1-Motion>", on_moving, add='+')
-
+    tv.bind(get_shortcut_button(), on_shortcut_clicked)
+    
     on_tab_selected()
 
 def on_tab_selected():
     page_model['backbone'] = None
-    page_model['person'] = load_table('tbl_person')
+    page_model['person'] = load_table('tbl_person', 'surname, forename, mid')
     page_model['event'] = load_table('tbl_event')
     page_model['person_event'] = load_table('tbl_person_event')
     
@@ -147,6 +149,8 @@ def on_export_clicked():
     messagebox.showinfo('Export', f"Successfully exported to {xls_path}")
 
 def on_move_down(ev):
+    page_model['from_info'] = (None, None)
+    
     try:
         tv = page_model['treeview']    
         col = tv.identify_column(ev.x)
@@ -173,25 +177,115 @@ def on_move_up(ev):
             if not col_id.startswith('val'): return
             
             col_id = int(col_id[3:])
-            row_id = int(tv.item(tv.identify_row(ev.y), 'values')[0])
             
             df = page_model['backbone']
             fri, fci = page_model['from_info']
             
-            tmp = df.iloc[row_id - 1][f"val{col_id}"]
-            
-            df.at[row_id - 1, f"val{col_id}"] = df.iloc[fri - 1][f"val{fci}"]
-            df.at[fri - 1, f"val{fci}"] = tmp
-            
-            update_treeview()
+            if fci != col_id:
+                fmid = int(df.iloc[fri - 1][f"val{fci}"])
+                found = False
+                
+                for i, r in df.iterrows():
+                    if r[f"val{col_id}"] == '':
+                        df.at[i, f"val{col_id}"] = str(fmid)
+                        df.at[fri - 1, f"val{fci}"] = ''
+                        found = True
+                        break
+                
+                if found:
+                    update_treeview()
+                else:
+                    messagebox.showerror('Full Desk', 'Cannot find vacant seat in Table {}.'.format(col_id))            
         except Exception as exc:
-            print(exc)
+            pass
         finally:
             page_model['from_info'] = (None, None)
 
 def on_moving(ev):
     pass
- 
+
+def on_shortcut_clicked(ev):
+    tv = page_model['treeview']
+    popup_menu = None
+    
+    try:
+        region = tv.identify('region', ev.x, ev.y)
+        
+        if region == 'cell':
+            col_name = tv.column(tv.identify_column(ev.x), 'id')            
+            
+            if col_name.startswith('val'):
+                col_id = int(col_name[3:])
+                item = tv.item(tv.identify_row(ev.y), 'values')
+                row_id = int(item[0])
+
+                df = page_model['backbone']
+                mid = df.iloc[row_id - 1][f"val{col_id}"]
+                idx = None
+                
+                for i, r in df.iterrows():
+                    if r[f"val{col_id}"] == '':
+                        idx = i
+                        break
+
+                popup_menu = tk.Menu(page_model['tab'], tearoff = 0)                
+                if idx is not None: popup_menu.add_command(label = f"Add Person", command = lambda: on_add_clicked(col_id, idx))
+                if mid != '': popup_menu.add_command(label = f"Remove Person", command = lambda: on_remove_clicked(row_id, col_id))
+                popup_menu.tk_popup(ev.x_root, ev.y_root)
+    finally:
+        if popup_menu is not None: popup_menu.grab_release()
+        
+def on_remove_clicked(row_id, col_id):
+    df = page_model['backbone']
+    df.at[row_id - 1, f"val{col_id}"] = ''
+    
+    update_treeview()
+
+def on_add_clicked(col_id, idx):    
+    choices = set()
+    
+    mid_list = page_model['backbone'].values.tolist()
+    seated = set()
+    
+    for ml in mid_list:
+        for mid in ml:
+            if mid != '': seated.add(str(mid))
+
+    for _, r in page_model['person'].iterrows():
+        if str(r['mid']) in seated: continue
+        
+        v = f"{r['mid']}: {r['surname']}, {r['forename']}"
+        choices.add(v)
+
+    if len(choices) == 0:
+        messagebox.showerror('All Seated', 'All members are seated.')
+        return
+
+    dlg = tk.Toplevel()
+    dlg.title('Add Person')
+
+    tkvar = tk.StringVar(dlg)    
+    dropdown = tk.OptionMenu(dlg, tkvar, *choices)
+    
+    tk.Label(dlg, text = 'Will be seated in Table ' + str(col_id)).grid(row = 0, column = 0)    
+    tk.Label(dlg, text = "Choose a person").grid(row = 1, column = 0)
+    dropdown.grid(row = 1, column = 1)
+
+    entries = { 'person': tkvar }
+    tk.Button(dlg, text = 'Save', command = lambda: on_add(dlg, entries, col_id, idx)).grid(row = 2, column = 1)
+
+def on_add(dlg, entries, col_id, idx):    
+    choice = null_or(entries['person'].get(), '')
+    
+    if choice != '':
+        mid = choice.split(':')[0]
+        
+        df = page_model['backbone']
+        df.at[idx, f"val{col_id}"] = mid
+
+    dlg.destroy()
+    update_treeview()
+
 def update_treeview(callback = None):
     tv = page_model['treeview']
     tv.delete(*tv.get_children())

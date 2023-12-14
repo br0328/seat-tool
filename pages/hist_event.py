@@ -43,7 +43,7 @@ def heavy_refresh():
     person_ev_df = load_table('tbl_person_event')
     
     page_model['column_info'] = [
-        ('line', { 'title': 'Line Nr.' }),
+        ('line', { 'title': 'No' }),
         ('surname', { 'title': 'Surname' }),
         ('forename', { 'title': 'Forename' }),
         ('mid', { 'title': 'Member-ID' })

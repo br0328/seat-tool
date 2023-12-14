@@ -20,7 +20,7 @@ page_model = {
     'label': None,
     'score': 0,
     'column_info': [
-        ('line', { 'title': 'Line Nr.' })
+        ('line', { 'title': 'No' })
     ] + [
         (f"val{i}", { 'title': f"Table {i}", 'editable': True, 'dtype': str })
         for i in range(1, desk_count + 1)
@@ -64,7 +64,7 @@ def init_tab(notebook):
     page_model['confview'], _ = create_treeview(
         master = mid_frame,
         column_info = [
-            ('line', { 'title': 'Line Nr.' }),
+            ('line', { 'title': 'No' }),
             ('person1', { 'title': 'Person1' }),
             ('person2', { 'title': 'Person2' }),
             ('val', { 'title': 'Value' }),

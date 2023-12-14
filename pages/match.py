@@ -19,7 +19,7 @@ page_model = {
     'backbone': None,
     'treeview': None,
     'column_info': [
-        ('line', { 'title': 'Line Nr.' }),
+        ('line', { 'title': 'No' }),
         ('surname', { 'title': 'Surname' }),
         ('forename', { 'title': 'Forename' }),
         ('mid', { 'title': 'Member-ID' })
@@ -119,7 +119,7 @@ def on_comment_clicked(mid, cid, omid):
         if str(r['mid']) == str(omid): tkvar.set(v)
 
     dropdown = tk.OptionMenu(dlg, tkvar, *choices)
-    tk.Label(dlg, text="Choose a person").grid(row = 0, column = 0)
+    tk.Label(dlg, text = "Choose a person").grid(row = 0, column = 0)
     dropdown.grid(row = 0, column = 1)
 
     evar = tk.StringVar(dlg, value = comm)
