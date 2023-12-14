@@ -2,7 +2,7 @@
 """ Hist-Event Tab Page
 """
 
-from tkinter import messagebox
+from tkinter import messagebox, Frame
 from constant import *
 from model import *
 from util import *
@@ -17,11 +17,17 @@ page_model = {
     'column_info': None,
     'buttons': None,
     'evcount': None,
-    'tab': None
+    'tab': None,
+    'topframe': None
 }
 
 def init_tab(notebook):
-    page_model['tab'] = create_tab(notebook, 'Hist-Events', on_tab_selected)
+    page_model['tab'] = create_tab(notebook, 'Hist-Events', on_tab_selected, on_save_db_clicked)
+    
+    page_model['topframe'] = top_frame = Frame(page_model['tab'], height = 700)
+    top_frame.pack_propagate(False)
+    top_frame.pack(fill = 'x', expand = False)
+    
     on_tab_selected()    
 
 def on_tab_selected():
@@ -52,7 +58,7 @@ def heavy_refresh():
         for i, row in ev_df.iterrows()
     ]
     page_model['treeview'], page_model['scroll'] = create_treeview(
-        master = page_model['tab'],
+        master = page_model['topframe'],
         column_info = page_model['column_info'],
         dbl_click_callback = on_treeview_dbl_clicked
     )
@@ -138,6 +144,8 @@ def on_edit_column(dlg, entries, ev_id):
     ev_df.at[ev_id, 'title'] = title    
     
     dlg.destroy()
+    
+    update_pending(True)
     heavy_refresh()
     
 def on_delete_column_clicked(ev_id):
@@ -145,6 +153,8 @@ def on_delete_column_clicked(ev_id):
     
     if messagebox.askyesno('Delete Event', 'Are you sure to delete?'):
         page_model['evdf'] = ev_df.drop([ev_id]).reset_index(drop = True)
+        
+        update_pending(True)
         heavy_refresh()
 
 def on_treeview_dbl_clicked(tv, item, col_id):
@@ -209,6 +219,8 @@ def on_add_column(dlg, entries):
     page_model['evdf'] = pd.concat([ev_df, pd.Series(rec_dict).to_frame().T], ignore_index = True)
     
     dlg.destroy()    
+    
+    update_pending(True)
     heavy_refresh()
 
 def on_save_db_clicked():
@@ -235,6 +247,9 @@ def on_save_db_clicked():
         messagebox.showerror('Error', 'Failed to save tbl_person_event.')
         return
 
+    bkup_db()
+    update_pending(False)
+    
     messagebox.showinfo('Success', 'Saved database successfully.')
     
 def on_edit_cell(dlg, entries, item, col_idx):
@@ -251,6 +266,8 @@ def on_edit_cell(dlg, entries, item, col_idx):
     df.at[idx, f"ev{col_idx}"] = v
     
     dlg.destroy()
+    
+    update_pending(True)
     update_treeview()
     
 def on_edit(dlg, entries, tags):
@@ -278,6 +295,8 @@ def on_edit(dlg, entries, tags):
         df.at[idx, key] = rv
 
     dlg.destroy()
+    
+    update_pending(True)
     update_treeview()
 
 def update_treeview(callback = None):

@@ -2,7 +2,7 @@
 """ Personal-Data Tab Page
 """
 
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, Frame
 from constant import *
 from model import *
 from util import *
@@ -27,12 +27,17 @@ page_model = {
 }
 
 def init_tab(notebook):
-    tab = create_tab(notebook, 'Personal-Data', on_tab_selected)
+    tab = create_tab(notebook, 'Personal-Data', on_tab_selected, on_save_database)
 
+    top_frame = Frame(tab, height = 700)
+    top_frame.pack_propagate(False)
+    top_frame.pack(fill = 'x', expand = False)
+    
     tv, _ = create_treeview(
-        master = tab,
+        master = top_frame,
         column_info = page_model['column_info'],
-        dbl_click_callback = on_treeview_dbl_clicked
+        dbl_click_callback = on_treeview_dbl_clicked,
+        disable_hscroll = True
     )
     page_model['buttons'] = create_control_panel(
         master = tab,
@@ -104,6 +109,7 @@ def on_edit(dlg, entries, tags):
     dlg.destroy()
     
     add_history()
+    update_pending(True)
     update_treeview()
 
 def on_add(dlg, entries, tags):
@@ -130,6 +136,7 @@ def on_add(dlg, entries, tags):
     dlg.destroy()
     
     add_history()    
+    update_pending(True)
     update_treeview()
 
 def on_load_excel_clicked():
@@ -149,6 +156,7 @@ def on_load_excel_clicked():
     page_model['is_excel'] = True
     
     reset_history()
+    update_pending(True)
     update_treeview(lambda: messagebox.showinfo('Success', 'Excel file loaded successfully.'))
 
 def on_load_database_clicked(is_init = False):
@@ -156,6 +164,7 @@ def on_load_database_clicked(is_init = False):
     page_model['is_excel'] = False
     
     reset_history()
+    update_pending(False)
     update_treeview(None if is_init else lambda: messagebox.showinfo('Success', 'SQL database loaded successfully.'))
 
 def on_import_csv_clicked():
@@ -190,6 +199,7 @@ def on_import_csv_clicked():
             page_model['is_excel'] = False
             
             reset_history()
+            update_pending(True)
             update_treeview(lambda: messagebox.showinfo('Success', 'Contacs imported successfully.'))            
         except pd.errors.IntCastingNaNError as e:
             messagebox.showerror('Import Error', 'Non-numeric values in the Member_ID column.')
@@ -225,6 +235,7 @@ def on_delete_line_clicked():
     page_model['backbone'] = df.drop(indices).reset_index(drop = True)
 
     add_history()
+    update_pending(True)
     update_treeview()
 
 def on_next_mid_clicked():
@@ -299,6 +310,9 @@ def on_save_database():
             messagebox.showerror('Error', f"Failed to save {tbl}.")
             return
     
+    bkup_db()
+    update_pending(False)
+    
     messagebox.showinfo('Success', 'Saved database successfully.')
     
 def update_treeview(callback = None):
@@ -365,6 +379,7 @@ def backward_history():
     page_model['backbone'], page_model['is_excel'] = page_model['history'][history_pos]
     page_model['history_pos'] = history_pos
     
+    update_pending(True)
     update_treeview()
     
     page_model['buttons']['Undo']['state'] = 'normal' if history_pos > 0 else 'disabled'
@@ -380,6 +395,7 @@ def forward_history():
     page_model['backbone'], page_model['is_excel'] = page_model['history'][history_pos]
     page_model['history_pos'] = history_pos
     
+    update_pending(True)
     update_treeview()
     
     page_model['buttons']['Undo']['state'] = 'normal'

@@ -34,7 +34,7 @@ page_model = {
 }
 
 def init_tab(notebook):
-    tab = create_tab(notebook, 'New-Event', on_tab_selected)
+    tab = create_tab(notebook, 'New-Event', on_tab_selected, on_save_db_clicked)
     
     st = ttk.Style()
     st.configure('ne.Treeview', rowheight = 40)
@@ -64,7 +64,7 @@ def init_tab(notebook):
     page_model['confview'], _ = create_treeview(
         master = mid_frame,
         column_info = [
-            ('line', { 'title': 'No' }),
+            ('line', { 'title': 'No', 'width': 40 }),
             ('person1', { 'title': 'Person1' }),
             ('person2', { 'title': 'Person2' }),
             ('val', { 'title': 'Value' }),
@@ -133,6 +133,8 @@ def on_add(dlg, entries, tags):
     page_model['backbone'] = pd.concat([df, pd.Series(rec_dict).to_frame().T], ignore_index = True)
     
     dlg.destroy()
+    
+    update_pending(False)
     update_treeview()
 
 def on_add_line_clicked():
@@ -162,6 +164,7 @@ def on_add_line_clicked():
     page_model['conflict'] = conf_df
     page_model['score'] = score
     
+    update_pending(True)
     update_treeview()
 
 def on_save_db_clicked():
@@ -229,6 +232,7 @@ def on_add_event(dlg, entries):
         messagebox.showerror('Error', 'Failed to save tbl_new_event.')
         return
 
+    bkup_db()
     messagebox.showinfo('Success', 'Saved database successfully.')
     update_treeview()
 
@@ -257,6 +261,8 @@ def on_edit(dlg, entries, tags):
         df.at[idx, key] = rv
 
     dlg.destroy()
+    
+    update_pending(True)
     update_treeview()
 
 def update_treeview(callback = None):
@@ -343,4 +349,6 @@ def on_import_clicked():
         return
     
     page_model['backbone'] = df
+    
+    update_pending(True)
     update_treeview(lambda: messagebox.showinfo('Success', 'Excel file loaded successfully.'))

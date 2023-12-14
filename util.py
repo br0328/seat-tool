@@ -2,8 +2,13 @@
 """ Common utility functions
 """
 
+from datetime import datetime
+from constant import *
+from model import *
 import pandas as pd
 import platform
+import shutil
+import os
 
 def regularize_dict(d, default_dict):
     for k, v in default_dict.items():
@@ -51,3 +56,15 @@ def get_shortcut_button():
         return '<Button-3>'
     else:
         return '<Button-2>'
+
+def bkup_db():
+    if not os.path.exists(local_db_path): return
+    
+    try:
+        shutil.copy(local_db_path, bkup_db_path.format(datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
+    except Exception:
+        pass
+
+def update_pending(pending):
+    glob_model['pending'] = pending
+    glob_model['root'].title(root_title + (' *' if pending else ''))

@@ -2,8 +2,11 @@
 """ Global constant values
 """
 
+root_title = 'Seating Generation'
+
 local_db_path = './data/local.db'
 manual_doc_path = './data/readme.html'
+bkup_db_path = './bkup/{}.db'
 
 match_col_count = 5
 no_match_col_count = 5

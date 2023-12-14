@@ -29,11 +29,12 @@ class HoverInfo:
             self.tooltip = None
 
 # Create a tab page
-def create_tab(master, name, callback):
+def create_tab(master, name, open_callback = None, save_callback = None):
     tab = ttk.Frame(master)
     master.add(tab, text = name)
     
-    glob_model['tab_callback'][name] = callback
+    glob_model['tab_callback'][name] = open_callback
+    glob_model['save_callback'][name] = save_callback
     return tab
 
 # Create a Treeview widget configured by column information and double-click callback function

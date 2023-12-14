@@ -2,7 +2,7 @@
 """ No-Match Tab Page
 """
 
-from tkinter import messagebox
+from tkinter import messagebox, Frame
 from constant import *
 from model import *
 from util import *
@@ -35,12 +35,17 @@ page_model = {
 }
 
 def init_tab(notebook):
-    page_model['tab'] = tab = create_tab(notebook, page_title, on_tab_selected)
+    page_model['tab'] = tab = create_tab(notebook, page_title, on_tab_selected, on_save_db_clicked)
+    
+    top_frame = Frame(tab, height = 700)
+    top_frame.pack_propagate(False)
+    top_frame.pack(fill = 'x', expand = False)
     
     page_model['treeview'], _ = create_treeview(
-        master = tab,
+        master = top_frame,
         column_info = page_model['column_info'],
-        dbl_click_callback = on_treeview_dbl_clicked
+        dbl_click_callback = on_treeview_dbl_clicked,
+        disable_hscroll = True
     )
     create_control_panel(
         master = tab,
@@ -164,6 +169,8 @@ def on_comment(dlg, entries, mid, cid):
     df.at[idx, f"val{cid}"] = omid
 
     dlg.destroy()
+    
+    update_pending(True)
     update_treeview()
 
 def on_enter(ev):
@@ -251,6 +258,9 @@ def on_save_db_clicked():
         messagebox.showerror('Error', 'Failed to save tbl_comment.')
         return
 
+    bkup_db()
+    update_pending(False)
+    
     messagebox.showinfo('Success', 'Saved database successfully.')
     
 def on_edit(dlg, entries, tags):
@@ -278,6 +288,8 @@ def on_edit(dlg, entries, tags):
         df.at[idx, key] = rv
 
     dlg.destroy()
+    
+    update_pending(True)
     update_treeview()
 
 def update_treeview(callback = None):

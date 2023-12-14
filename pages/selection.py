@@ -2,7 +2,7 @@
 """ Selection Tab Page
 """
 
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, Frame
 from constant import *
 from model import *
 from util import *
@@ -24,12 +24,17 @@ page_model = {
 }
 
 def init_tab(notebook):
-    tab = create_tab(notebook, 'Selection', on_tab_selected)
+    tab = create_tab(notebook, 'Selection', on_tab_selected, on_save_db_clicked)
+    
+    top_frame = Frame(tab, height = 700)
+    top_frame.pack_propagate(False)
+    top_frame.pack(fill = 'x', expand = False)
     
     page_model['treeview'], _ = create_treeview(
-        master = tab,
+        master = top_frame,
         column_info = page_model['column_info'],
-        dbl_click_callback = on_treeview_dbl_clicked
+        dbl_click_callback = on_treeview_dbl_clicked,
+        disable_hscroll = True
     )
     # page_model['treeview'], _ = create_checkbox_treeview(
     #     master = tab,
@@ -88,6 +93,8 @@ def on_treeview_dbl_clicked(tv, item, col_id):
     nv = 1 if ov == '' else 0
     
     df.at[idx, 'val'] = nv
+    
+    update_pending(True)
     update_treeview()
 
 # Assumed that only selected members are listed in the CSV file
@@ -121,6 +128,7 @@ def on_import_csv_clicked():
     df = pd.DataFrame(records, columns = ['surname', 'forename', 'mid', 'val'])
     page_model['backbone'] = df
     
+    update_pending(True)
     update_treeview(lambda: messagebox.showinfo('Success', 'CSV file loaded successfully.'))
 
 def on_edit_line_clicked():
@@ -145,6 +153,9 @@ def on_save_db_clicked():
         messagebox.showerror('Error', 'Failed to save tbl_person_selection.')
         return
 
+    bkup_db()
+    update_pending(False)
+    
     messagebox.showinfo('Success', 'Saved database successfully.')
 
 def on_visibility_clicked():
@@ -181,6 +192,8 @@ def on_edit(dlg, entries, tags):
         df.at[idx, key] = rv
 
     dlg.destroy()
+    
+    update_pending(True)
     update_treeview()
 
 def update_treeview(callback = None):

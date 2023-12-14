@@ -2,6 +2,7 @@
 """ Main script
 """
 
+from tkinter import ttk, messagebox
 from pages import personal_data
 from pages import hist_event
 from pages import new_event
@@ -11,7 +12,6 @@ from pages import never_match
 from pages import selection
 from pages import manual
 from pages import edit_event
-from tkinter import ttk
 from model import *
 from util import *
 from ui import *
@@ -21,15 +21,40 @@ import os
 # Run a callback function for a newly opened tab page
 def on_tab_changed(e):
     tab = e.widget.select()
-    name = e.widget.tab(tab, "text")
+    name = e.widget.tab(tab, 'text')
     
-    callback = glob_model['tab_callback'][name] # The callback function is stored in glob_model['tab_callback']
-    if callback: callback()
+    if glob_model['cur_tab'] is not None:
+        save_callback = glob_model['save_callback'][glob_model['cur_tab_name']]
+        
+        if glob_model['pending'] and save_callback is not None:
+            if messagebox.askyesno('Save', 'There exists modification pending.\nAre you going to save changes?'):
+                save_callback()
+
+            update_pending(False)
+    
+    glob_model['cur_tab'] = tab
+    glob_model['cur_tab_name'] = name
+    open_callback = glob_model['tab_callback'][name] # The callback function is stored in glob_model['tab_callback']
+    
+    if open_callback: open_callback()
+
+def on_window_close():
+    if glob_model['cur_tab'] is not None:
+        save_callback = glob_model['save_callback'][glob_model['cur_tab_name']]
+        
+        if glob_model['pending'] and save_callback is not None:
+            if messagebox.askyesno('Save', 'There exists modification pending.\nAre you going to save changes before exit?'):
+                save_callback()                
+
+    glob_model['root'].destroy()
 
 if not os.path.exists('./out/'): os.mkdir('./out/')
+if not os.path.exists('./bkup/'): os.mkdir('./bkup/')
 
 # UI root implementation
 glob_model['root'] = root = tk.Tk()
+
+root.protocol('WM_DELETE_WINDOW', on_window_close)
 root.title("Seating Generation")
 root.update_idletasks()
 

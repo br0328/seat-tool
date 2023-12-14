@@ -31,7 +31,7 @@ page_model = {
 }
 
 def init_tab(notebook):
-    page_model['tab'] = tab = create_tab(notebook, 'Edit-Event', on_tab_selected)
+    page_model['tab'] = tab = create_tab(notebook, 'Edit-Event', on_tab_selected, on_save_event_clicked)
     
     st = ttk.Style()
     st.configure('ne.Treeview', rowheight = 40)
@@ -132,6 +132,9 @@ def on_save_event_clicked():
     page_model['person_event'] = df
     on_check_clicked()
 
+    bkup_db()
+    update_pending(False)
+    
     messagebox.showinfo('Success', 'Saved database successfully.')
 
 def on_check_clicked():
@@ -242,6 +245,7 @@ def on_move_up(ev):
                         break
                 
                 if found:
+                    update_pending(True)
                     update_treeview()
                 else:
                     messagebox.showerror('Full Desk', 'Cannot find vacant seat in Table {}.'.format(col_id))            
@@ -288,6 +292,7 @@ def on_remove_clicked(row_id, col_id):
     df = page_model['backbone']
     df.at[row_id - 1, f"val{col_id}"] = ''
     
+    update_pending(True)
     update_treeview()
 
 def on_add_clicked(col_id, idx):    
@@ -333,6 +338,8 @@ def on_add(dlg, entries, col_id, idx):
         df.at[idx, f"val{col_id}"] = mid
 
     dlg.destroy()
+    
+    update_pending(True)
     update_treeview()
 
 def update_treeview(callback = None):

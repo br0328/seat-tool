@@ -11,7 +11,11 @@ import os
 glob_model = {
     'local_conn': None, # Global variable for local db connection (It keeps alive for the whole app process)
     'tab_callback': {}, # Callback functions for tab pages opening,
-    'root': None
+    'save_callback': {}, # Callback functions for tab pages saving,
+    'root': None,
+    'pending': False,
+    'cur_tab': None,
+    'cur_tab_name': None
 }
 
 # Load Sqlite3 db if exists,

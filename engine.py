@@ -73,12 +73,13 @@ class Engine:
     def bestrafungsmatrix(self, eid, bestrafungswert):    
         df_tmp = self.df_relations.copy()
         group_dict = self.person_event_df[self.person_event_df['eid'] == eid].set_index('mid')
+        idx_list = group_dict.index.tolist()
         
-        for id1 in df_tmp.index:
+        for id1 in idx_list:
             v = null_or(group_dict.loc[id1].val, -1)
             if v <= 0: continue
             
-            for id2 in df_tmp.columns:
+            for id2 in idx_list:
                 if id1 == id2: continue # ignore cases where row and column values are the same
                                     
                 if v == group_dict.loc[id2].val:
@@ -154,6 +155,7 @@ class Engine:
     
         # Assembling all elements of the satisfaction matrix and converting it into a NumPy array        
         self.df_satisfaction_matrix = self.df_bestr_tot.copy() + self.df_satis_match.copy() + self.df_satis_nomatch.copy() + self.df_satis_nevermatch.copy() + self.df_satis_branchen.copy()        
+        self.df_satisfaction_matrix = self.df_satisfaction_matrix.fillna(0)
         self.satisfaction_matrix = self.df_satisfaction_matrix.values  # Convert DataFrame to NumPy array
         
         print(self.df_satisfaction_matrix)
