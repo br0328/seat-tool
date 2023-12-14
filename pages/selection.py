@@ -13,7 +13,7 @@ page_model = {
     'backbone': None,
     'treeview': None,
     'column_info': [
-        ('line', { 'title': 'No' }),
+        ('line', { 'title': 'No', 'width': 40 }),
         ('surname', { 'title': 'Surname' }),
         ('forename', { 'title': 'Forename' }),
         ('mid', { 'title': 'Member-ID' }),

@@ -44,7 +44,7 @@ def create_treeview(master, column_info, dbl_click_callback, style = 'Treeview',
         regularize_dict(info, {
             'title': '', 'width': 0, 'anchor': 'center', 'editable': False, 'dtype': str
         })
-        tv.column(key, width = info['width'], anchor = info['anchor'], minwidth = 10)
+        tv.column(key, width = info['width'], anchor = info['anchor'], minwidth = 70, stretch = (info['width'] == 0))
         tv.heading(key, text = info['title'], anchor = 'center')
 
     # Add an external v-scrollbar

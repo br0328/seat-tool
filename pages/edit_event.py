@@ -19,7 +19,7 @@ page_model = {
     'topframe': None,
     'dropdown': None,
     'column_info': [
-        ('line', { 'title': 'No' })
+        ('line', { 'title': 'No', 'width': 40 })
     ] + [
         (f"val{i}", { 'title': f"Table {i}", 'editable': True, 'dtype': str })
         for i in range(1, desk_count + 1)
@@ -95,7 +95,44 @@ def on_tab_selected():
     update_treeview()
 
 def on_save_event_clicked():
-    pass
+    eid = get_eid(page_model['event'], page_model['evvar'].get())
+    df = page_model['backbone']
+    
+    if eid is None:
+        messagebox.showerror('No Event', 'No event is loaded.')
+        return
+        
+    if df is None:
+        messagebox.showerror('No Event', 'No event is loaded.')
+        return
+    
+    arr = []
+    dcount = [0] * desk_count
+    
+    for _, r in df.iterrows():
+        for cid in range(desk_count):
+            mid = r[f"val{cid + 1}"]
+            if mid == '': continue
+            
+            arr.append([int(mid), eid, cid + 1])
+            dcount[cid] += 1
+            
+            if dcount[cid] >= desk_size + 1:
+                messagebox.showerror('Desk Overflow', 'There is a desk exceeding limit size.')
+                return
+    
+    df = page_model['person_event']
+    df = df.drop(df[df['eid'] == eid].index)
+    df = pd.concat([df, pd.DataFrame(arr, columns = ['mid', 'eid', 'val'])])
+    
+    if not save_table('tbl_person_event', df):
+        messagebox.showerror('Error', 'Failed to save tbl_person_event.')
+        return
+    
+    page_model['person_event'] = df
+    on_check_clicked()
+
+    messagebox.showinfo('Success', 'Saved database successfully.')
 
 def on_check_clicked():
     eid = get_eid(page_model['event'], page_model['evvar'].get())
@@ -129,23 +166,35 @@ def on_export_clicked():
     xls_path = filedialog.asksaveasfilename(title = 'Select an Excel file', defaultextension = '.xlsx')
     if xls_path is None or xls_path == '': return
     
+    eid = get_eid(page_model['event'], page_model['evvar'].get())
     df = page_model['backbone']
-    df = df.drop(['display'], axis = 1)
     
-    rename_dict = { 'neid': 'Seat'}
-    
-    for i in range(1, desk_count + 1):
-        rename_dict[f"val{i}"] = f"Table {i}"
-        df[f"val{i}"] = df[f"val{i}"].astype(str)
+    if eid is None:
+        messagebox.showerror('No Event', 'No event is loaded.')
+        return
         
-    df = df.rename(columns = rename_dict)
+    if df is None:
+        messagebox.showerror('No Event', 'No event is loaded.')
+        return
     
-    for i, r in df.iterrows():
-        for j in range(1, desk_count + 1):
-            col = f"Table {j}"
-            df.at[i, col] = get_cell_text(int(r[col]) if r[col] is not None else '', for_excel = True)
+    arr = [([str(i + 1)] + ['' for _ in range(desk_count)]) for i in range(desk_size)]
+    dcount = [0] * desk_count
     
+    for _, r in df.iterrows():
+        for cid in range(desk_count):
+            mid = r[f"val{cid + 1}"]
+            if mid == '': continue
+            
+            if dcount[cid] >= desk_size:
+                messagebox.showerror('Desk Overflow', 'There is a desk exceeding limit size.')
+                return
+            
+            arr[dcount[cid]][cid + 1] = get_cell_text(int(mid), for_excel = True)
+            dcount[cid] += 1
+    
+    df = pd.DataFrame(arr, columns = ['Seat'] + [f"Table {i + 1}" for i in range(desk_count)])    
     df.to_excel(xls_path, index = False)
+    
     messagebox.showinfo('Export', f"Successfully exported to {xls_path}")
 
 def on_move_down(ev):

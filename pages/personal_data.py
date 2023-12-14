@@ -15,7 +15,7 @@ page_model = {
     'is_excel': False,
     'treeview': None,
     'column_info': [
-        ('line', { 'title': 'No' }),
+        ('line', { 'title': 'No', 'width': 40 }),
         ('surname', { 'title': 'Surname', 'editable': True }),
         ('forename', { 'title': 'Forename', 'editable': True }),
         ('mid', { 'title': 'Member-ID', 'editable': True, 'dtype': int }),

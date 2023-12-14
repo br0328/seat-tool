@@ -20,7 +20,7 @@ page_model = {
     'label': None,
     'score': 0,
     'column_info': [
-        ('line', { 'title': 'No' })
+        ('line', { 'title': 'No', 'width': 40 })
     ] + [
         (f"val{i}", { 'title': f"Table {i}", 'editable': True, 'dtype': str })
         for i in range(1, desk_count + 1)
