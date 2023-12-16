@@ -64,7 +64,7 @@ def init_tab(notebook):
     on_tab_selected()
 
 def on_tab_selected():
-    page_model['person'] = person_df = load_table('tbl_person', 'surname, forename, mid')
+    page_model['person'] = person_df = load_table('tbl_person', 'surname, forename, mid')    
     person_match_df = load_table(page_tbl)
     records = []
     
@@ -104,24 +104,32 @@ def on_shortcut_clicked(ev):
                 omid = item[4 + col_id]
                                 
                 popup_menu = tk.Menu(page_model['tab'], tearoff = 0)                
-                popup_menu.add_command(label = f"Edit Match Info", command = lambda: on_comment_clicked(row_id, col_id, omid))
+                popup_menu.add_command(label = f"Edit Match Info", command = lambda: on_comment_clicked(row_id, col_id, omid, item))
                 popup_menu.tk_popup(ev.x_root, ev.y_root)
     finally:
         if popup_menu is not None: popup_menu.grab_release()
 
-def on_comment_clicked(mid, cid, omid):
+def on_comment_clicked(mid, cid, omid, item):
     comm = null_or(get_comment(page_model['comment'], page_tid, mid, cid), '')
     
     dlg = tk.Toplevel()
     dlg.title('Edit Cell')
 
     tkvar = tk.StringVar(dlg)
-    choices = set()
+    choices = []
     
     for _, r in page_model['person'].iterrows():
         v = f"{r['mid']}: {r['surname']}, {r['forename']}"
-        choices.add(v)
-        if str(r['mid']) == str(omid): tkvar.set(v)
+        is_exists = False
+        
+        for i in range(page_col_count):
+            if item[4 + i] == str(r['mid']):
+                is_exists = True
+                break
+        
+        if str(r['mid']) == str(omid) or not is_exists:
+            choices.append(v)
+            if str(r['mid']) == str(omid): tkvar.set(v)
 
     dropdown = tk.OptionMenu(dlg, tkvar, *choices)
     tk.Label(dlg, text = "Choose a person").grid(row = 0, column = 0)
@@ -225,7 +233,7 @@ def on_treeview_dbl_clicked(tv, item, col_id):
     row_id = int(item[3])
     omid = item[4 + col_id]
                     
-    on_comment_clicked(row_id, col_id, omid)
+    on_comment_clicked(row_id, col_id, omid, item)
 
 def on_edit_line_clicked():
     tv = page_model['treeview']

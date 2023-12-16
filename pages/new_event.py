@@ -47,8 +47,7 @@ def init_tab(notebook):
         master = top_frame,
         column_info = page_model['column_info'],
         dbl_click_callback = None,#on_treeview_dbl_clicked,
-        style = 'ne.Treeview',
-        disable_hscroll = True
+        style = 'ne.Treeview'
     )
     brk_frame = Frame(tab, height = 50)
     brk_frame.pack_propagate(False)
@@ -165,6 +164,7 @@ def on_add_line_clicked():
     page_model['score'] = score
     
     update_pending(True)
+    update_columns()
     update_treeview()
 
 def on_save_db_clicked():
@@ -233,6 +233,8 @@ def on_add_event(dlg, entries):
         return
 
     bkup_db()
+    update_pending(False)
+    
     messagebox.showinfo('Success', 'Saved database successfully.')
     update_treeview()
 
@@ -314,6 +316,21 @@ def get_cell_text(mid, for_excel = False):
     if person is None: return ''
     
     return person['surname'] + ' ' + person['forename'] + (' ' if for_excel else '\n') + str(mid)
+
+def update_columns():
+    df = page_model['backbone']
+    show_colummns = set()
+    
+    for _, r in df.iterrows():
+        for i in range(desk_count):
+            v = null_or(r[f"val{i + 1}"], '')            
+            
+            if v != '' and int(v) != 0:
+                for j in range(i + 1):
+                    show_colummns.add(j + 1)
+    
+    show_colummns = [f"val{i}" for i in sorted(list(show_colummns))]
+    page_model['treeview']['displaycolumns'] = ['line'] + show_colummns
 
 def on_export_clicked():
     xls_path = filedialog.asksaveasfilename(title = 'Select an Excel file', defaultextension = '.xlsx')

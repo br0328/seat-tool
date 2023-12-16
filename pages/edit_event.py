@@ -52,8 +52,7 @@ def init_tab(notebook):
         master = mid_frame,
         column_info = page_model['column_info'],
         dbl_click_callback = None,
-        style = 'ne.Treeview',
-        disable_hscroll = True
+        style = 'ne.Treeview'
     )
     bottom_frame = Frame(tab)
     bottom_frame.pack(fill = 'both', expand = True)
@@ -77,17 +76,17 @@ def init_tab(notebook):
 def on_tab_selected():
     page_model['backbone'] = None
     page_model['person'] = load_table('tbl_person', 'surname, forename, mid')
-    page_model['event'] = load_table('tbl_event')
+    page_model['event'] = load_table('tbl_event', 'title')
     page_model['person_event'] = load_table('tbl_person_event')
     
     if page_model['dropdown'] is not None:
         page_model['dropdown'].destroy()
 
     page_model['evvar'] = tk.StringVar(page_model['topframe'])
-    choices = set()
+    choices = []
 
     for _, r in page_model['event'].iterrows():
-        choices.add(r['title'])
+        choices.append(r['title'])
 
     page_model['dropdown'] = dropdown = tk.OptionMenu(page_model['topframe'], page_model['evvar'], *choices)
     dropdown.grid(row = 1, column = 1)
@@ -155,7 +154,39 @@ def on_check_clicked():
         dcount[v] += 1
     
     page_model['backbone'] = pd.DataFrame(arr, columns = [f"val{i + 1}" for i in range(desk_count)])
+    
+    update_columns()
     update_treeview()
+
+def update_columns():
+    df = page_model['backbone']
+    show_colummns = set()
+    
+    for _, r in df.iterrows():
+        for i in range(desk_count):
+            v = null_or(r[f"val{i + 1}"], '')            
+            
+            if v != '' and int(v) != 0:
+                for j in range(i + 1):
+                    show_colummns.add(j + 1)
+    
+    show_colummns = [f"val{i}" for i in sorted(list(show_colummns))]
+    page_model['treeview']['displaycolumns'] = ['line'] + show_colummns
+
+def top_justfiy():
+    df = page_model['backbone']
+    arr = [['' for _ in range(desk_count)] for _ in range(desk_size + 1)]
+    dcount = [0] * desk_count
+    
+    for _, r in df.iterrows():
+        for i in range(desk_count):
+            v = null_or(r[f"val{i + 1}"], '')
+            
+            if v != '' and int(v) != 0:
+                arr[dcount[i]][i] = int(v)
+                dcount[i] += 1
+    
+    page_model['backbone'] = pd.DataFrame(arr, columns = [f"val{i + 1}" for i in range(desk_count)])
 
 def get_cell_text(mid, for_excel = False):
     if mid == '': return ''
@@ -245,6 +276,8 @@ def on_move_up(ev):
                         break
                 
                 if found:
+                    top_justfiy()
+                                        
                     update_pending(True)
                     update_treeview()
                 else:

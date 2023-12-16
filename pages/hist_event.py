@@ -109,11 +109,13 @@ def on_shortcut_clicked(ev):
             col_id = int(col_name[2:])
 
             popup_menu = tk.Menu(page_model['tab'], tearoff = 0)
-            popup_menu.add_command(label = f"Edit Column {ev_df.iloc[col_id]['title']}", command = lambda: on_edit_column_clicked(col_id))
+            popup_menu.add_command(label = f"Edit Column Header {ev_df.iloc[col_id]['title']}", command = lambda: on_edit_column_clicked(col_id))
             popup_menu.add_command(label = f"Delete Column {ev_df.iloc[col_id]['title']}", command = lambda: on_delete_column_clicked(col_id))
             popup_menu.add_command(label = 'Edit Cell Value', command = lambda: on_treeview_dbl_clicked(tv, tv.identify_row(ev.y), tv.identify_column(ev.x)))
 
             popup_menu.tk_popup(ev.x_root, ev.y_root)
+    except Exception:
+        pass
     finally:
         if popup_menu is not None: popup_menu.grab_release()
 

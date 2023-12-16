@@ -8,7 +8,10 @@ from model import *
 from util import *
 from ui import *
 import pandas as pd
+import shutil
 import copy
+import glob
+import os
 
 page_model = {
     'backbone': None,
@@ -46,7 +49,7 @@ def init_tab(notebook):
             'Load Excel\nDatabase': { 'click': on_load_excel_clicked },
             'Import contacts\nfrom CSV': { 'click': on_import_csv_clicked },
             'Save\nDatabase': { 'click': on_save_database },
-            #'Add new\nColumn': { 'click': None },
+            'Restore\nfrom Backup': { 'click': on_restore_database },
             'Add new Line': { 'click': on_add_line_clicked },
             'Edit Line': { 'click': on_edit_line_clicked },
             'Delete Line(s)': { 'click': on_delete_line_clicked },
@@ -177,6 +180,7 @@ def on_import_csv_clicked():
 
         try:
             contact_df['mid'] = pd.to_numeric(contact_df['mid'], errors = 'coerce').fillna(0).astype('int64')
+            contact_df = contact_df.drop_duplicates(subset = ['mid', 'forename', 'surname'])
             
             if len(contact_df[contact_df['mid'] == 0]) > 0:
                 messagebox.showerror('Import Error', 'There exists a contact with MemberID=0, which is not allowed.')
@@ -217,7 +221,7 @@ def on_edit_line_clicked():
     
     try:
         item = tv.selection()[0]
-        on_treeview_dbl_clicked(tv, item)
+        on_treeview_dbl_clicked(tv, item, 0)
     except Exception:
         messagebox.showerror('Error', 'Please select a row first.')
 
@@ -249,6 +253,44 @@ def on_undo_clicked():
 
 def on_redo_clicked():
     forward_history()
+
+def on_restore_database():
+    choices = set()
+    g = glob.glob('./bkup/*.db')
+    
+    if len(g) == 0:
+        messagebox.showerror('No Bkup', 'No database found in backup folder.')
+        return
+    
+    dlg = tk.Toplevel()
+    dlg.title('Restore DB')
+
+    tkvar = tk.StringVar(dlg)
+
+    for f in g:
+        f = f.replace('\\', '/').split('/')[-1][:-3]
+        choices.add(f)
+    
+    dropdown = tk.OptionMenu(dlg, tkvar, *choices)
+    tk.Label(dlg, text = "Choose Date").grid(row = 0, column = 0)
+    dropdown.grid(row = 0, column = 1)
+
+    entries = { 'date': tkvar }
+    tk.Button(dlg, text = 'Restore', command = lambda: on_restore(dlg, entries)).grid(row = 1, column = 1)
+
+def on_restore(dlg, entries):
+    dt = entries['date'].get()
+    dlg.destroy()
+    
+    if dt is not None and dt != '':
+        f = './bkup/{}.db'.format(dt)
+        
+        if os.path.exists(f):
+            shutil.copy(f, local_db_path)
+            
+            close_db()
+            load_or_create_db()
+            on_load_database_clicked()
 
 def on_save_database():
     df = page_model['backbone']

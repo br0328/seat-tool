@@ -104,14 +104,29 @@ def on_import_csv_clicked():
     
     try:
         df = pd.read_csv(csv_path)
-        df = df.rename(columns = {'Mitgliedernummer': 'mid'})
+        df = df.rename(columns = {'Mitgliedernummer': 'mid', 'Vorname': 'forename', 'Nachname': 'surname'})
         df['mid'] = pd.to_numeric(df['mid'], errors = 'coerce').fillna(0).astype('int64')
     except Exception:
         messagebox.showerror('Error', 'Error loading CSV file.')
         return
     
     person_df = load_table('tbl_person', 'surname, forename, mid')
-    records = []
+    errors, records = [], []
+    
+    for _, r in df.iterrows():
+        found = False
+        
+        for _, p in person_df.iterrows():
+            if int(p['mid']) == int(r['mid']) and p['forename'] == r['forename'] and p['surname'] == r['surname']:
+                found = True
+                break
+        
+        if not found: errors.append(f"{r['mid']}: {r['forename']} {r['surname']}")
+    
+    if len(errors) > 0:
+        messagebox.showwarning('Invalid Members', 'The following {} entries from CSV are inconsistent with the database.\nPlease check first name, last name and member ID, and correct them if necessary.\n\n{}'.
+            format(len(errors), '\n'.join(errors)))
+        return
     
     for _, person in person_df.iterrows():
         mid = person['mid']
@@ -136,7 +151,7 @@ def on_edit_line_clicked():
     
     try:
         item = tv.selection()[0]
-        on_treeview_dbl_clicked(tv, item)
+        on_treeview_dbl_clicked(tv, item, 0)
     except Exception:
         messagebox.showerror('Error', 'Please select a row first.')
 
