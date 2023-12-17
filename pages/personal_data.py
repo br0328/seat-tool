@@ -418,7 +418,7 @@ def backward_history():
     if history_pos <= 0: return False
     
     history_pos -= 1
-    page_model['backbone'], page_model['is_excel'] = page_model['history'][history_pos]
+    page_model['backbone'], page_model['is_excel'] = copy.deepcopy(page_model['history'][history_pos])
     page_model['history_pos'] = history_pos
     
     update_pending(True)
@@ -434,7 +434,7 @@ def forward_history():
     if history_pos >= len(page_model['history']) - 1: return False
     
     history_pos += 1
-    page_model['backbone'], page_model['is_excel'] = page_model['history'][history_pos]
+    page_model['backbone'], page_model['is_excel'] = copy.deepcopy(page_model['history'][history_pos])
     page_model['history_pos'] = history_pos
     
     update_pending(True)

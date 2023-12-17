@@ -11,6 +11,7 @@ from ui import *
 import pandas as pd
 import numpy as np
 import random
+import copy
 
 page_model = {
     'tab': None,
@@ -27,7 +28,10 @@ page_model = {
     'person': None,
     'event': None,
     'person_event': None,
-    'from_info': (None, None)
+    'history': [],
+    'history_pos': 0,
+    'from_info': (None, None),
+    'buttons': None
 }
 
 def init_tab(notebook):
@@ -57,11 +61,13 @@ def init_tab(notebook):
     bottom_frame = Frame(tab)
     bottom_frame.pack(fill = 'both', expand = True)
     
-    create_control_panel(
+    page_model['buttons'] = create_control_panel(
         master = bottom_frame,
         button_info = {
             'Save event': { 'click': on_save_event_clicked },
-            'Export event\nto XLS': { 'click': on_export_clicked }
+            'Export event\nto XLS': { 'click': on_export_clicked },
+            'Undo': { 'click': on_undo_clicked },
+            'Redo': { 'click': on_redo_clicked }
         }
     )
     tv = page_model['treeview']
@@ -91,6 +97,9 @@ def on_tab_selected():
     page_model['dropdown'] = dropdown = tk.OptionMenu(page_model['topframe'], page_model['evvar'], *choices)
     dropdown.grid(row = 1, column = 1)
 
+    page_model['buttons']['Undo']['state'] = 'disabled'
+    page_model['buttons']['Redo']['state'] = 'disabled'
+    
     update_treeview()
 
 def on_save_event_clicked():
@@ -136,6 +145,12 @@ def on_save_event_clicked():
     
     messagebox.showinfo('Success', 'Saved database successfully.')
 
+def on_undo_clicked():
+    backward_history()
+
+def on_redo_clicked():
+    forward_history()
+
 def on_check_clicked():
     eid = get_eid(page_model['event'], page_model['evvar'].get())
     if eid is None: return
@@ -155,6 +170,7 @@ def on_check_clicked():
     
     page_model['backbone'] = pd.DataFrame(arr, columns = [f"val{i + 1}" for i in range(desk_count)])
     
+    reset_history()
     update_columns()
     update_treeview()
 
@@ -277,6 +293,7 @@ def on_move_up(ev):
                 
                 if found:
                     top_justfiy()
+                    add_history()
                                         
                     update_pending(True)
                     update_treeview()
@@ -325,14 +342,13 @@ def on_remove_clicked(row_id, col_id):
     df = page_model['backbone']
     df.at[row_id - 1, f"val{col_id}"] = ''
     
+    add_history()
     update_pending(True)
     update_treeview()
 
-def on_add_clicked(col_id, idx):    
-    choices = set()
-    
+def on_add_clicked(col_id, idx):
     mid_list = page_model['backbone'].values.tolist()
-    seated = set()
+    choices, seated = [], set()
     
     for ml in mid_list:
         for mid in ml:
@@ -342,7 +358,7 @@ def on_add_clicked(col_id, idx):
         if str(r['mid']) in seated: continue
         
         v = f"{r['mid']}: {r['surname']}, {r['forename']}"
-        choices.add(v)
+        choices.append(v)
 
     if len(choices) == 0:
         messagebox.showerror('All Seated', 'All members are seated.')
@@ -372,6 +388,7 @@ def on_add(dlg, entries, col_id, idx):
 
     dlg.destroy()
     
+    add_history()
     update_pending(True)
     update_treeview()
 
@@ -391,3 +408,57 @@ def update_treeview(callback = None):
             )
     
     if callback: callback()
+
+def reset_history():
+    page_model['history'].clear()
+    page_model['history_pos'] = -1
+    
+    add_history()
+    
+    page_model['buttons']['Undo']['state'] = 'disabled'
+    page_model['buttons']['Redo']['state'] = 'disabled'
+
+def add_history():    
+    df = copy.deepcopy(page_model['backbone'])
+    history = page_model['history']
+    
+    history = history[:page_model['history_pos'] + 1]
+    history.append(df)
+    
+    page_model['history'] = history
+    page_model['history_pos'] = len(history) - 1
+    
+    page_model['buttons']['Undo']['state'] = 'normal'
+    page_model['buttons']['Redo']['state'] = 'disabled'
+    
+def backward_history():
+    history_pos = page_model['history_pos']
+    if history_pos <= 0: return False
+    
+    history_pos -= 1
+    page_model['backbone'] = copy.deepcopy(page_model['history'][history_pos])
+    page_model['history_pos'] = history_pos
+    
+    update_pending(True)
+    update_treeview()
+    
+    page_model['buttons']['Undo']['state'] = 'normal' if history_pos > 0 else 'disabled'
+    page_model['buttons']['Redo']['state'] = 'normal'
+    
+    return True
+
+def forward_history():
+    history_pos = page_model['history_pos']
+    if history_pos >= len(page_model['history']) - 1: return False
+    
+    history_pos += 1
+    page_model['backbone'] = copy.deepcopy(page_model['history'][history_pos])
+    page_model['history_pos'] = history_pos
+    
+    update_pending(True)
+    update_treeview()
+    
+    page_model['buttons']['Undo']['state'] = 'normal'
+    page_model['buttons']['Redo']['state'] = 'normal' if history_pos < len(page_model['history']) - 1 else 'disabled'
+    
+    return True
