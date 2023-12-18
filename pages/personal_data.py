@@ -255,7 +255,7 @@ def on_redo_clicked():
     forward_history()
 
 def on_restore_database():
-    choices = set()
+    choices = []
     g = glob.glob('./bkup/*.db')
     
     if len(g) == 0:
@@ -267,9 +267,9 @@ def on_restore_database():
 
     tkvar = tk.StringVar(dlg)
 
-    for f in g:
+    for f in sorted(g):
         f = f.replace('\\', '/').split('/')[-1][:-3]
-        choices.add(f)
+        choices.append(f)
     
     dropdown = tk.OptionMenu(dlg, tkvar, *choices)
     tk.Label(dlg, text = "Choose Date").grid(row = 0, column = 0)
