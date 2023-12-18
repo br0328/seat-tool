@@ -8,6 +8,7 @@ from model import *
 from util import *
 from ui import *
 import pandas as pd
+import copy
 
 page_model = {
     'backbone': None,
@@ -19,8 +20,10 @@ page_model = {
         ('mid', { 'title': 'Member-ID' }),
         #('val', { 'title': 'Selection', 'editable': True, 'dtype': int } )
     ],
-    'visibility_button': None,
-    'visibility': True
+    'visibility': True,
+    'buttons': None,
+    'history': [],
+    'history_pos': 0
 }
 
 def init_tab(notebook):
@@ -41,22 +44,30 @@ def init_tab(notebook):
     #     column_info = page_model['column_info'],
     #     dbl_click_callback = on_treeview_dbl_clicked
     # )
-    page_model['visibility_button'] = create_control_panel(
+    page_model['buttons'] = create_control_panel(
         master = tab,
         button_info = {
             'Toggle selection': { 'click': on_edit_line_clicked },
             'Load selection\nfrom CSV': { 'click': on_import_csv_clicked },
             'Visibility': { 'click': on_visibility_clicked },
-            'Save Database': { 'click': on_save_db_clicked }
+            'Save Database': { 'click': on_save_db_clicked },
+            'Undo': { 'click': on_undo_clicked },
+            'Redo': { 'click': on_redo_clicked }
         }
-    )['Visibility']
+    )
     
-    page_model['visibility_button']['text'] = 'Show only\nselected lines'
+    page_model['buttons']['Visibility']['text'] = 'Show only\nselected lines'
     page_model['visibility'] = True
     
     page_model['treeview'].tag_configure('checked', background = 'lightgreen')
     on_tab_selected()
 
+def on_undo_clicked():
+    backward_history()
+
+def on_redo_clicked():
+    forward_history()
+    
 def on_tab_selected():
     person_df = load_table('tbl_person', 'surname, forename, mid')
     person_match_df = load_table('tbl_person_selection')
@@ -78,6 +89,7 @@ def on_tab_selected():
     df = pd.DataFrame(records, columns = ['surname', 'forename', 'mid', 'val'])
     page_model['backbone'] = df
     
+    reset_history()
     update_treeview()
 
 def on_treeview_dbl_clicked(tv, item, col_id):
@@ -94,6 +106,7 @@ def on_treeview_dbl_clicked(tv, item, col_id):
     
     df.at[idx, 'val'] = nv
     
+    add_history()
     update_pending(True)
     update_treeview()
 
@@ -143,6 +156,7 @@ def on_import_csv_clicked():
     df = pd.DataFrame(records, columns = ['surname', 'forename', 'mid', 'val'])
     page_model['backbone'] = df
     
+    reset_history()
     update_pending(True)
     update_treeview(lambda: messagebox.showinfo('Success', 'CSV file loaded successfully.'))
 
@@ -175,9 +189,9 @@ def on_save_db_clicked():
 
 def on_visibility_clicked():
     if page_model['visibility']:
-        page_model['visibility_button']['text'] = 'Show all\nlines'
+        page_model['buttons']['Visibility']['text'] = 'Show all\nlines'
     else:
-        page_model['visibility_button']['text'] = 'Show only\nselected lines'
+        page_model['buttons']['Visibility']['text'] = 'Show only\nselected lines'
     
     page_model['visibility'] = not page_model['visibility']
     on_tab_selected()
@@ -208,6 +222,7 @@ def on_edit(dlg, entries, tags):
 
     dlg.destroy()
     
+    add_history()
     update_pending(True)
     update_treeview()
 
@@ -229,3 +244,57 @@ def update_treeview(callback = None):
         )
 
     if callback: callback()
+
+def reset_history():
+    page_model['history'].clear()
+    page_model['history_pos'] = -1
+    
+    add_history()
+    
+    page_model['buttons']['Undo']['state'] = 'disabled'
+    page_model['buttons']['Redo']['state'] = 'disabled'
+
+def add_history():    
+    df = copy.deepcopy(page_model['backbone'])
+    history = page_model['history']
+    
+    history = history[:page_model['history_pos'] + 1]
+    history.append(df)
+    
+    page_model['history'] = history
+    page_model['history_pos'] = len(history) - 1
+    
+    page_model['buttons']['Undo']['state'] = 'normal'
+    page_model['buttons']['Redo']['state'] = 'disabled'
+    
+def backward_history():
+    history_pos = page_model['history_pos']
+    if history_pos <= 0: return False
+    
+    history_pos -= 1
+    page_model['backbone'] = copy.deepcopy(page_model['history'][history_pos])
+    page_model['history_pos'] = history_pos
+    
+    update_pending(True)
+    update_treeview()
+    
+    page_model['buttons']['Undo']['state'] = 'normal' if history_pos > 0 else 'disabled'
+    page_model['buttons']['Redo']['state'] = 'normal'
+    
+    return True
+
+def forward_history():
+    history_pos = page_model['history_pos']
+    if history_pos >= len(page_model['history']) - 1: return False
+    
+    history_pos += 1
+    page_model['backbone'] = copy.deepcopy(page_model['history'][history_pos])
+    page_model['history_pos'] = history_pos
+    
+    update_pending(True)
+    update_treeview()
+    
+    page_model['buttons']['Undo']['state'] = 'normal'
+    page_model['buttons']['Redo']['state'] = 'normal' if history_pos < len(page_model['history']) - 1 else 'disabled'
+    
+    return True

@@ -1,5 +1,5 @@
 
-""" No-Match Tab Page
+""" No Match Tab Page
 """
 
 from tkinter import messagebox, Frame
@@ -8,6 +8,7 @@ from model import *
 from util import *
 from ui import *
 import pandas as pd
+import copy
 
 page_tid = 1
 page_title = 'No Match'
@@ -31,7 +32,10 @@ page_model = {
     'person': None,
     'tab': None,
     'hovertext': None,
-    'hoverdlg': None
+    'hoverdlg': None,
+    'buttons': None,
+    'history': [],
+    'history_pos': 0    
 }
 
 def init_tab(notebook):
@@ -47,11 +51,13 @@ def init_tab(notebook):
         dbl_click_callback = on_treeview_dbl_clicked,
         disable_hscroll = True
     )
-    create_control_panel(
+    page_model['buttons'] = create_control_panel(
         master = tab,
         button_info = {
             #'Edit Line': { 'click': on_edit_line_clicked },
-            'Save Database': { 'click': on_save_db_clicked }
+            'Save Database': { 'click': on_save_db_clicked },
+            'Undo': { 'click': on_undo_clicked },
+            'Redo': { 'click': on_redo_clicked }
         }
     )
     page_model['treeview'].bind(get_shortcut_button(), on_shortcut_clicked)
@@ -63,8 +69,14 @@ def init_tab(notebook):
     
     on_tab_selected()
 
+def on_undo_clicked():
+    backward_history()
+
+def on_redo_clicked():
+    forward_history()
+    
 def on_tab_selected():
-    page_model['person'] = person_df = load_table('tbl_person', 'surname, forename, mid')
+    page_model['person'] = person_df = load_table('tbl_person', 'surname, forename, mid')    
     person_match_df = load_table(page_tbl)
     records = []
     
@@ -85,6 +97,7 @@ def on_tab_selected():
     page_model['backbone'] = df    
     page_model['comment'] = load_table('tbl_comment')
     
+    reset_history()
     update_treeview()
 
 def on_shortcut_clicked(ev):
@@ -104,27 +117,35 @@ def on_shortcut_clicked(ev):
                 omid = item[4 + col_id]
                                 
                 popup_menu = tk.Menu(page_model['tab'], tearoff = 0)                
-                popup_menu.add_command(label = f"Edit Match Info", command = lambda: on_comment_clicked(row_id, col_id, omid))
+                popup_menu.add_command(label = f"Edit Match Info", command = lambda: on_comment_clicked(row_id, col_id, omid, item))
                 popup_menu.tk_popup(ev.x_root, ev.y_root)
     finally:
         if popup_menu is not None: popup_menu.grab_release()
 
-def on_comment_clicked(mid, cid, omid):
+def on_comment_clicked(mid, cid, omid, item):
     comm = null_or(get_comment(page_model['comment'], page_tid, mid, cid), '')
     
     dlg = tk.Toplevel()
     dlg.title('Edit Cell')
 
     tkvar = tk.StringVar(dlg)
-    choices = set()
+    choices = []
     
     for _, r in page_model['person'].iterrows():
         v = f"{r['mid']}: {r['surname']}, {r['forename']}"
-        choices.add(v)
-        if str(r['mid']) == str(omid): tkvar.set(v)
+        is_exists = False
+        
+        for i in range(page_col_count):
+            if item[4 + i] == str(r['mid']):
+                is_exists = True
+                break
+        
+        if str(r['mid']) == str(omid) or not is_exists:
+            choices.append(v)
+            if str(r['mid']) == str(omid): tkvar.set(v)
 
     dropdown = tk.OptionMenu(dlg, tkvar, *choices)
-    tk.Label(dlg, text="Choose a person").grid(row = 0, column = 0)
+    tk.Label(dlg, text = "Choose a person").grid(row = 0, column = 0)
     dropdown.grid(row = 0, column = 1)
 
     evar = tk.StringVar(dlg, value = comm)
@@ -170,6 +191,7 @@ def on_comment(dlg, entries, mid, cid):
 
     dlg.destroy()
     
+    add_history()
     update_pending(True)
     update_treeview()
 
@@ -225,7 +247,7 @@ def on_treeview_dbl_clicked(tv, item, col_id):
     row_id = int(item[3])
     omid = item[4 + col_id]
                     
-    on_comment_clicked(row_id, col_id, omid)
+    on_comment_clicked(row_id, col_id, omid, item)
 
 def on_edit_line_clicked():
     tv = page_model['treeview']
@@ -289,6 +311,7 @@ def on_edit(dlg, entries, tags):
 
     dlg.destroy()
     
+    add_history()
     update_pending(True)
     update_treeview()
 
@@ -307,3 +330,56 @@ def update_treeview(callback = None):
         )
 
     if callback: callback()
+
+def reset_history():
+    page_model['history'].clear()
+    page_model['history_pos'] = -1
+    
+    add_history()
+    
+    page_model['buttons']['Undo']['state'] = 'disabled'
+    page_model['buttons']['Redo']['state'] = 'disabled'
+
+def add_history():    
+    history = page_model['history']
+    
+    history = history[:page_model['history_pos'] + 1]
+    history.append((copy.deepcopy(page_model['backbone']), copy.deepcopy(page_model['comment'])))
+    
+    page_model['history'] = history
+    page_model['history_pos'] = len(history) - 1
+    
+    page_model['buttons']['Undo']['state'] = 'normal'
+    page_model['buttons']['Redo']['state'] = 'disabled'
+    
+def backward_history():
+    history_pos = page_model['history_pos']
+    if history_pos <= 0: return False
+    
+    history_pos -= 1
+    page_model['backbone'], page_model['comment'] = copy.deepcopy(page_model['history'][history_pos])
+    page_model['history_pos'] = history_pos
+    
+    update_pending(True)
+    update_treeview()
+    
+    page_model['buttons']['Undo']['state'] = 'normal' if history_pos > 0 else 'disabled'
+    page_model['buttons']['Redo']['state'] = 'normal'
+    
+    return True
+
+def forward_history():
+    history_pos = page_model['history_pos']
+    if history_pos >= len(page_model['history']) - 1: return False
+    
+    history_pos += 1
+    page_model['backbone'], page_model['comment'] = copy.deepcopy(page_model['history'][history_pos])
+    page_model['history_pos'] = history_pos
+    
+    update_pending(True)
+    update_treeview()
+    
+    page_model['buttons']['Undo']['state'] = 'normal'
+    page_model['buttons']['Redo']['state'] = 'normal' if history_pos < len(page_model['history']) - 1 else 'disabled'
+    
+    return True
