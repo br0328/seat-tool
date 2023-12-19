@@ -11,7 +11,7 @@ import pandas as pd
 import copy
 
 page_tid = 2
-page_title = 'Never Match'
+page_title = 'Never-Match'
 page_col = 'NVM'
 page_tbl = 'tbl_person_never_match'
 page_col_count = never_match_col_count

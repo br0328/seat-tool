@@ -1,8 +1,145 @@
 <!DOCTYPE html>
 <html>
-    <body>
-        <h1>
-            Hello! This is Nikola!
-        </h1>
-    </body>
+<body>
+
+<h1>MANUAL</h1>
+<h2>Network Event Seating Generation App</h2>
+
+<h3>1. Personal-Data</h3>
+
+<p>In this tab, you can manage database and the table of members.</p>
+<img src="data/shot-1.png" alt="Personal Data Tab">
+
+<h5>(1) Load SQL Database</h5>
+<p>Loads Sqlite3 database file([APP_ROOT_PATH]/data/local.db) and refresh the page. By default, the page shows the content of the database file(if exists) when the tab is selected.</p>
+
+<h5>(2) Load Excel Database</h5>
+<p>Loads Excel-format database file and refresh the page. The Excel file is an alterative database format including not only members' table but also informations of matches/no-matches and historic events with seatings.</p>
+<img src="data/shot-1.png" alt="Example of Excel Database">
+
+<h5>(3) Import contacts from CSV</h5>
+<p>Loads CSV file containing information of new members and add the corresponding records to the existing table.</p>
+<img src="data/shot-1.png" alt="Example of Contact CSV">
+
+<h5>(4) Save Database</h5>
+<p>Saves the modified table(s) onto Sqlite3 database. If the current page was loaded from Excel-format database, all related tables(members, match/no-match information and events) are saved. Otherwise, only the table of members is saved.</p>
+
+<h5>(5) Restore from Backup</h5>
+<p>Loads the old database from backup directory. ([APP_ROOT_PATH]/bkup) You can choose the datetime from pop-up dialog to restore the old database.</p>
+<img src="short-1.png" alt="Restore Database from Backup">
+
+<h5>(6) Add new Line</h5>
+<p>Adds a new member. You can input information of a new member in pop-up dialog and click "Add" button.</p>
+<img src="data/shot-1.png" alt="Add Member Dialog">
+
+<h5>(7) Edit Line</h5>
+<p>Changes information of an existing member with the selected row. You can modify information in pop-up dialog and click "Save" button to apply.</p>
+<img src="data/shot-1.png" alt="Edit Member Dialog">
+
+<h5>(8) Delete Line</h5>
+<p>Removes a member with the selected row.</p>
+
+<h5>(9) Show next free Member-ID</h5>
+<p>Shows pop-up dialog with the number of Member ID which is available to use for a new member. It is helpful when you are going to set information of new members.</p>
+
+<h5>(10) Undo/Redo</h5>
+<p>Backwards/forwards actions.</p>
+
+<h5>(11) Double Click on Table</h5>
+<p>Same with "Edit Line" button.</p>
+
+<h3>2. Hist-Events</h3>
+
+<p>In this tab, you review and edit event history with seating information. Also, you can add a new event and seating arrangement manually.</p>
+<img src="data/shot-1.png" alt="Hist-Events Tab">
+
+<h5>(1) Add new column</h5>
+<p>Adds a new event. You should input the date of a new event in pop-up dialog.</p>
+<img src="data/shot-1.png" alt="Add Event Dialog">
+
+<h5>(2) Save database</h5>
+<p>Saves the modified table onto Sqlite3 database.</p>
+
+<h5>(3) Undo/Redo</h5>
+<p>Backwards/forwards actions.</p>
+
+<h5>(4) Edit Column Header</h5>
+<p>Changes the date of an event corresponding to the selected cell.</p>
+<img src="data/shot-1.png" alt="Edit Event Dialog">
+
+<h5>(5) Delete Column</h5>
+<p>Removes an event corresponding to the selected cell.</p>
+
+<h5>(6) Edit Cell Value</h5>
+<p>Changes the number of desk for a member and an event corresponding to the selected cell.</p>
+<img src="data/shot-1.png" alt="Edit Value Dialog">
+
+<h3>3. Match/No-Match/Never-Match</h3>
+
+<p>In this tab, you can manage matching/no-matching relationships of members.</p>
+<img src="data/shot-1.png" alt="Match Tab">
+
+<h5>(1) Save database</h5>
+<p>Saves the modified table onto Sqlite3 database.</p>
+
+<h5>(2) Undo/Redo</h5>
+<p>Backwards/forwards actions.</p>
+
+<h5>(3) Edit Match Info</h5>
+<p>Changes/clears the relationship corresponding to the selected cell. You can choose a member from drop-down list in pop-up dialog, who is related to the selected member. If you choose "--Empty--" from drop-down list, the corresponding relationship will be cleared. Each relationship can have a comment, i.e. a short description. You can add or edit comment in the dialog.</p>
+<img src="data/shot-1.png" alt="Edit Match Info Dialog">
+
+<h3>4. Selection</h3>
+
+<p>In this tab, you can manage attendances of members.</p>
+<img src="data/shot-1.png" alt="Selection Tab">
+
+<h5>(1) Toggle selection/Double-Click on a Row</h5>
+<p>Switches the selection state of a corresponding member. Green background means selected.</p>
+
+<h5>(2) Load selection from CSV</h5>
+<p>Reads a CSV file containing attended members and refresh the page.</p>
+<img src="data/shot-1.png" alt="Example of CSV">
+
+<h5>(3) Show only selected lines/Show all lines</h5>
+<p>Togges the visualization mode of the page whether only selected member rows are shown or all member rows are shown.</p>
+
+<h5>(4) Save database</h5>
+<p>Saves the modified table onto Sqlite3 database.</p>
+
+<h5>(5) Undo/Redo</h5>
+<p>Backwards/forwards actions.</p>
+
+<h3>5. New Event</h3>
+
+<p>In this tab, you can generate a seating arrangement for a new event and upload the event.</p>
+<img src="data/shot-1.png" alt="New Event Tab">
+
+<h5>(1) Generate new event</h5>
+<p>Generates a seating arrangement using Genetic Algorithm. The result is the best possible solution for seating.</p>
+
+<h5>(2) Add to Hist-event and save database</h5>
+<p>Uploads a new event with the generated seating arrangement. You should input the date of a new event in pop-up dialog.</p>
+<img src="data/shot-1.png" alt="Add Event">
+
+<h5>(3) Export event to XLSX</h5>
+<p>Outputs an Excel-file including the generated seating arrangement.</p>
+<img src="data/shot-1.png" alt="Excel Report">
+
+<h3>6. Edit Event</h3>
+
+<p>In this tab, you can modify the seating arrangement for an uploaded event.</p>
+<img src="data/shot-1.png" alt="Edit Event Tab">
+
+<h5>(1) Save event</h5>
+<p>Saves modified arrangement onto Sqlite3 database.</p>
+
+<h5>(2) Export event to XLSX</h5>
+<p>Outputs an Excel-file including the current seating arrangement.</p>
+<img src="data/shot-1.png" alt="Excel Report">
+
+<h5>(3) Undo/Redo</h5>
+<p>Backwards/forwards actions.</p>
+
+</body>
 </html>

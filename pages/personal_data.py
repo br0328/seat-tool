@@ -52,7 +52,7 @@ def init_tab(notebook):
             'Restore\nfrom Backup': { 'click': on_restore_database },
             'Add new Line': { 'click': on_add_line_clicked },
             'Edit Line': { 'click': on_edit_line_clicked },
-            'Delete Line(s)': { 'click': on_delete_line_clicked },
+            'Delete Line': { 'click': on_delete_line_clicked },
             'Show next free\nMember-ID': { 'click': on_next_mid_clicked },
             'Undo': { 'click': on_undo_clicked },
             'Redo': { 'click': on_redo_clicked }
