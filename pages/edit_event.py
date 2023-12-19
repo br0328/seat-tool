@@ -342,7 +342,9 @@ def on_remove_clicked(row_id, col_id):
     df = page_model['backbone']
     df.at[row_id - 1, f"val{col_id}"] = ''
     
+    top_justfiy()
     add_history()
+    
     update_pending(True)
     update_treeview()
 

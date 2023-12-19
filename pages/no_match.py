@@ -128,8 +128,8 @@ def on_comment_clicked(mid, cid, omid, item):
     dlg = tk.Toplevel()
     dlg.title('Edit Cell')
 
-    tkvar = tk.StringVar(dlg)
-    choices = []
+    tkvar = tk.StringVar(dlg, '--Empty--')
+    choices = ['--Empty--']
     
     for _, r in page_model['person'].iterrows():
         v = f"{r['mid']}: {r['surname']}, {r['forename']}"
@@ -181,7 +181,7 @@ def on_comment(dlg, entries, mid, cid):
     
     choice = null_or(entries['person'].get(), '')
     
-    if choice != '':
+    if choice != '' and choice != '--Empty--':
         omid = int(choice.split(':')[0])
     else:
         omid = 0
