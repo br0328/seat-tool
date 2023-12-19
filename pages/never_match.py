@@ -133,12 +133,13 @@ def on_comment_clicked(mid, cid, omid, item):
     
     for _, r in page_model['person'].iterrows():
         v = f"{r['mid']}: {r['surname']}, {r['forename']}"
-        is_exists = False
+        is_exists = str(r['mid']) == str(mid)
         
-        for i in range(page_col_count):
-            if item[4 + i] == str(r['mid']):
-                is_exists = True
-                break
+        if not is_exists:
+            for i in range(page_col_count):
+                if item[4 + i] == str(r['mid']):
+                    is_exists = True
+                    break
         
         if str(r['mid']) == str(omid) or not is_exists:
             choices.append(v)

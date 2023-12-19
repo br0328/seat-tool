@@ -199,7 +199,7 @@ def on_import_csv_clicked():
                 }
                 df = pd.concat([df, pd.Series(r).to_frame().T], ignore_index = True)
             
-            page_model['backbone'] = df
+            page_model['backbone'] = df.drop_duplicates(subset = ['mid', 'forename', 'surname'])
             page_model['is_excel'] = False
             
             reset_history()
