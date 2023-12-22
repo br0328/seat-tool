@@ -115,7 +115,7 @@ def display_and_decide(df_duplicates, color, df_new_copy, do_not_import_list):
 ########################################################################################################
 def import_contacts():
     global df
-    filepath = filedialog.askopenfilename(title="Select a CSV file", filetypes=[("CSV files", "*.csv")])
+    filepath = filedialog.askopenfilename(title="Wählen Sie eine CSV-Datei aus", filetypes=[("CSV files", "*.csv")])
     if not filepath:
         return
     df_new = pd.read_csv(filepath, usecols=['Forename', 'Surname', 'Member_ID', 'Branch'])
@@ -127,7 +127,7 @@ def import_contacts():
         next_member_number = int(next_member_number)
     
         messagebox.showerror(
-            "Import Error",
+            "Importfehler",
             "There are entries without Member_ID in the CSV file. Please add a Member_ID in Editor X and export the CSV file again.\n"
             f"The next available Member_ID is: {next_member_number}"
         )
@@ -137,7 +137,7 @@ def import_contacts():
     try:
         df_new['Member_ID'] = pd.to_numeric(df_new['Member_ID'], errors='coerce').fillna(0).astype('int64')
     except pd.errors.IntCastingNaNError as e:
-        messagebox.showerror("Import Error", "Non-numeric values in the Member_ID column.")
+        messagebox.showerror("Importfehler", "Non-numeric values in the Member_ID column.")
         return
     
     # Check for Case A: Complete duplicates in the new file
@@ -337,7 +337,7 @@ def edit_selected_row(treeview, tab_name):
         selected_item = treeview.selection()[0]  # The ID of the selected row in the given Treeview
         edit_entry(treeview, tab_name, selected_item)
     except IndexError:
-        messagebox.showerror("Error", "Please select a row first.")
+        messagebox.showerror("Error", "Bitte wählen Sie zunächst eine Zeile aus.")
 
 
     
@@ -633,7 +633,7 @@ def tab_changed(event):
 ########################################################################################################
 def load_excel_file():
     global df
-    filepath = filedialog.askopenfilename(title="Select an Excel file", filetypes=[("Excel files", "*.xlsx")])
+    filepath = filedialog.askopenfilename(title="Wählen Sie eine Excel-Datei aus", filetypes=[("Excel files", "*.xlsx")])
     if not filepath:
         return  # User cancelled the dialog
 

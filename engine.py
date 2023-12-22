@@ -276,7 +276,7 @@ class Engine:
         df_bestr_tot_relevant_non_zero[['ID1', 'ID2']] = np.sort(df_bestr_tot_relevant_non_zero[['ID1', 'ID2']].values, axis=1)  # Sort the 'ID1' and 'ID2' columns
         df_bestr_tot_relevant_non_zero = df_bestr_tot_relevant_non_zero[df_bestr_tot_relevant_non_zero['Value'] != 0]   # Only keep the rows where 'Value' is non-zero
         df_bestr_tot_relevant_non_zero.drop_duplicates(inplace=True) # Remove duplicates
-        df_bestr_tot_relevant_non_zero['Konflikt-Art'] = 'Repeated Mating'
+        df_bestr_tot_relevant_non_zero['Konflikt-Art'] = 'Wiederholte Paarung'
     
         # Check which undesirable pairings were still implemented
         #---------------------------------------------------------------------------------
@@ -303,7 +303,34 @@ class Engine:
         df_satis_nomatch_relevant_non_zero[['ID1', 'ID2']] = np.sort(df_satis_nomatch_relevant_non_zero[['ID1', 'ID2']].values, axis=1)  # Sort the 'ID1' and 'ID2' columns
         df_satis_nomatch_relevant_non_zero = df_satis_nomatch_relevant_non_zero[df_satis_nomatch_relevant_non_zero['Value'] != 0]   # Only keep the rows where 'Value' is non-zero
         df_satis_nomatch_relevant_non_zero.drop_duplicates(inplace=True)   # Remove duplicates
-        df_satis_nomatch_relevant_non_zero['Konflikt-Art'] = 'Unwanted Matching'
+        df_satis_nomatch_relevant_non_zero['Konflikt-Art'] = 'Unerwünschte No-match'
+        
+        # NEVER ___ Check which undesirable pairings were still implemented
+        #---------------------------------------------------------------------------------
+        self.df_satis_nevermatch.index.name = None
+        self.df_satis_nevermatch.columns.name = None
+    
+        df_satis_nevermatch_relevant = self.df_satis_nevermatch.copy()
+        group_dict = {ID:group for group, IDs in self.grouped_df.items() for ID in IDs}
+    
+        # Check each entry in df2 and set it to 0 if the IDs are not in the same group
+        for index in self.df_satis_nevermatch.index:
+            for column in self.df_satis_nevermatch.columns:
+                # Skip the case when the ID is combined with itself
+                if index == column: continue
+                # If the IDs are not in the same group, set the value to 0
+                if group_dict.get(index) != group_dict.get(column):
+                    df_satis_nevermatch_relevant.at[index, column] = 0
+    
+        stacked_df_satis_nevermatch_relevant = df_satis_nevermatch_relevant.stack()   # Convert df_bestr_tot_relevant into a series object
+        df_satis_nevermatch_relevant_non_zero = stacked_df_satis_nevermatch_relevant.reset_index()   # Create a DataFrame from the Series object
+        df_satis_nevermatch_relevant_non_zero.columns = ['ID1', 'ID2', 'Value']   # Rename the columns
+        #print(df_satis_nevermatch_relevant_non_zero.columns)
+        
+        df_satis_nevermatch_relevant_non_zero[['ID1', 'ID2']] = np.sort(df_satis_nevermatch_relevant_non_zero[['ID1', 'ID2']].values, axis=1)  # Sort the 'ID1' and 'ID2' columns
+        df_satis_nevermatch_relevant_non_zero = df_satis_nevermatch_relevant_non_zero[df_satis_nevermatch_relevant_non_zero['Value'] != 0]   # Only keep the rows where 'Value' is non-zero
+        df_satis_nevermatch_relevant_non_zero.drop_duplicates(inplace=True)   # Remove duplicates
+        df_satis_nevermatch_relevant_non_zero['Konflikt-Art'] = 'Unerwünschte Never-match'
     
         # Check which desired pairings were not realized
         #---------------------------------------------------------------------------------
@@ -335,7 +362,7 @@ class Engine:
         df_satis_match_missed_non_zero = df_satis_match_missed_non_zero[df_satis_match_missed_non_zero['Value'] != 0]   # Only keep the rows where 'Value' is non-zero
         df_satis_match_missed_non_zero.drop_duplicates(inplace=True)   # Remove duplicates
     
-        df_satis_match_missed_non_zero['Konflikt-Art'] = 'Missed desired matching'
+        df_satis_match_missed_non_zero['Konflikt-Art'] = 'Verpasste erwünschte Paarung'
         
         # Check which undesirable industry pairings were still implemented
         #---------------------------------------------------------------------------------
@@ -365,9 +392,15 @@ class Engine:
         df_satis_branchen_relevant_non_zero[['ID1', 'ID2']] = np.sort(df_satis_branchen_relevant_non_zero[['ID1', 'ID2']].values, axis=1)  # Sort the 'ID1' and 'ID2' columns
         df_satis_branchen_relevant_non_zero = df_satis_branchen_relevant_non_zero[df_satis_branchen_relevant_non_zero['Value'] != 0]   # Only keep the rows where 'Value' is non-zero
         df_satis_branchen_relevant_non_zero.drop_duplicates(inplace=True)   # Remove duplicates
-        df_satis_branchen_relevant_non_zero['Konflikt-Art'] = 'Undesirable industry pairing'
+        df_satis_branchen_relevant_non_zero['Konflikt-Art'] = 'Unerwünschte Branchen-Paarung'
     
-        self.df_conflicts = pd.concat([df_bestr_tot_relevant_non_zero, df_satis_nomatch_relevant_non_zero, df_satis_match_missed_non_zero, df_satis_branchen_relevant_non_zero])
+        self.df_conflicts = pd.concat([
+            df_bestr_tot_relevant_non_zero,
+            df_satis_nomatch_relevant_non_zero,
+            df_satis_nevermatch_relevant_non_zero,
+            df_satis_match_missed_non_zero,
+            df_satis_branchen_relevant_non_zero
+        ])
         #print(self.df_conflicts)
 
     def show_groups(self):

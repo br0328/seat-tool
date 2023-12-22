@@ -20,9 +20,9 @@ page_model = {
     'backbone': None,
     'treeview': None,
     'column_info': [
-        ('line', { 'title': 'No', 'width': 40 }),
-        ('surname', { 'title': 'Surname' }),
-        ('forename', { 'title': 'Forename' }),
+        ('line', { 'title': 'Nr', 'width': 40 }),
+        ('surname', { 'title': 'Nachname' }),
+        ('forename', { 'title': 'Vorname' }),
         ('mid', { 'title': 'Member-ID' })
     ] + [
         (f"val{i}", { 'title': f"{page_col}-{i + 1}", 'editable': True, 'dtype': int })
@@ -55,7 +55,7 @@ def init_tab(notebook):
         master = tab,
         button_info = {
             #'Edit Line': { 'click': on_edit_line_clicked },
-            'Save Database': { 'click': on_save_db_clicked },
+            'Datenbank speichern': { 'click': on_save_db_clicked },
             'Undo': { 'click': on_undo_clicked },
             'Redo': { 'click': on_redo_clicked }
         }
@@ -117,7 +117,7 @@ def on_shortcut_clicked(ev):
                 omid = item[4 + col_id]
                                 
                 popup_menu = tk.Menu(page_model['tab'], tearoff = 0)                
-                popup_menu.add_command(label = f"Edit Match Info", command = lambda: on_comment_clicked(row_id, col_id, omid, item))
+                popup_menu.add_command(label = f"Informationen bearbeiten", command = lambda: on_comment_clicked(row_id, col_id, omid, item))
                 popup_menu.tk_popup(ev.x_root, ev.y_root)
     finally:
         if popup_menu is not None: popup_menu.grab_release()
@@ -126,10 +126,10 @@ def on_comment_clicked(mid, cid, omid, item):
     comm = null_or(get_comment(page_model['comment'], page_tid, mid, cid), '')
     
     dlg = tk.Toplevel()
-    dlg.title('Edit Cell')
+    dlg.title('Zelle bearbeiten')
 
-    tkvar = tk.StringVar(dlg, '--Empty--')
-    choices = ['--Empty--']
+    tkvar = tk.StringVar(dlg, '--Niemand--')
+    choices = ['--Niemand--']
     
     for _, r in page_model['person'].iterrows():
         v = f"{r['mid']}: {r['surname']}, {r['forename']}"
@@ -146,13 +146,13 @@ def on_comment_clicked(mid, cid, omid, item):
             if str(r['mid']) == str(omid): tkvar.set(v)
 
     dropdown = tk.OptionMenu(dlg, tkvar, *choices)
-    tk.Label(dlg, text = "Choose a person").grid(row = 0, column = 0)
+    tk.Label(dlg, text = "Wähle eine Person").grid(row = 0, column = 0)
     dropdown.grid(row = 0, column = 1)
 
     evar = tk.StringVar(dlg, value = comm)
     ent = tk.Entry(dlg, textvariable = evar)
     
-    tk.Label(dlg, text = 'Comment: ').grid(row = 1, column = 0)
+    tk.Label(dlg, text = 'Kommentar: ').grid(row = 1, column = 0)
     ent.grid(row = 1, column = 1)
     
     entries = { 'comm': evar, 'person': tkvar }
@@ -181,7 +181,7 @@ def on_comment(dlg, entries, mid, cid):
     
     choice = null_or(entries['person'].get(), '')
     
-    if choice != '' and choice != '--Empty--':
+    if choice != '' and choice != '--Niemand--':
         omid = int(choice.split(':')[0])
     else:
         omid = 0
@@ -257,7 +257,7 @@ def on_edit_line_clicked():
         item = tv.selection()[0]
         on_treeview_dbl_clicked(tv, item)
     except Exception:
-        messagebox.showerror('Error', 'Please select a row first.')
+        messagebox.showerror('Fehler', 'Bitte wählen Sie zunächst eine Zeile aus.')
 
 def on_save_db_clicked():
     df = page_model['backbone']
@@ -274,17 +274,17 @@ def on_save_db_clicked():
     person_match_df = pd.DataFrame(records, columns = ['mid'] + [f"val{i + 1}" for i in range(page_col_count)])
     
     if not save_table(page_tbl, person_match_df):
-        messagebox.showerror('Error', 'Failed to save tbl_person_match.')
+        messagebox.showerror('Fehler', 'tbl_person_match konnte nicht gespeichert werden.')
         return
 
     if not save_table('tbl_comment', page_model['comment']):
-        messagebox.showerror('Error', 'Failed to save tbl_comment.')
+        messagebox.showerror('Fehler', 'tbl_comment konnte nicht gespeichert werden.')
         return
 
     bkup_db()
     update_pending(False)
     
-    messagebox.showinfo('Success', 'Saved database successfully.')
+    messagebox.showinfo('Erfolg', 'Datenbank erfolgreich gespeichert.')
     
 def on_edit(dlg, entries, tags):
     tv = page_model['treeview']
@@ -301,7 +301,7 @@ def on_edit(dlg, entries, tags):
         rv, err = check_ci_validation(ci, v)
         
         if err is not None:
-            messagebox.showerror('Entry Error', err)
+            messagebox.showerror('Eingabefehler', err)
             dlg.destroy()
             return
         else:

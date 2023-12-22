@@ -3,9 +3,11 @@
 """
 
 from tkhtmlview import HTMLScrolledText, RenderHTML
+from tkinterweb import HtmlFrame
 from tkinter import messagebox
 from constant import *
 from ui import *
+import os
 
 page_model = {
     'tab': None,
@@ -22,8 +24,12 @@ def on_tab_selected():
     # webview.pack(fill="both", expand=True)
     # webview.fit_height()
 
-    webview = HTMLScrolledText(page_model['tab'], html = RenderHTML(manual_doc_path))
+    webview = HtmlFrame(page_model['tab'])
+    webview.load_file(os.getcwd() + '/data/readme.html')
     webview.pack(expand = True, fill = 'both', padx = 10, pady = 10)
+    
+    # webview = HTMLScrolledText(page_model['tab'], html = RenderHTML(manual_doc_path))
+    # webview.pack(expand = True, fill = 'both', padx = 10, pady = 10)
 
     # if os.path.exists(manual_doc_path):
     #     with open(manual_doc_path, 'r', encoding = 'utf-8') as fp:

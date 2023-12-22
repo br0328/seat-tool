@@ -2,7 +2,7 @@
 """ Global constant values
 """
 
-root_title = 'Seating Generation'
+root_title = 'OptiSeat'
 
 local_db_path = './data/local.db'
 manual_doc_path = './data/readme.html'

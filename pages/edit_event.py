@@ -134,7 +134,7 @@ def on_save_event_clicked():
     df = pd.concat([df, pd.DataFrame(arr, columns = ['mid', 'eid', 'val'])])
     
     if not save_table('tbl_person_event', df):
-        messagebox.showerror('Error', 'Failed to save tbl_person_event.')
+        messagebox.showerror('Fehler', 'Failed to save tbl_person_event.')
         return
     
     page_model['person_event'] = df
@@ -143,7 +143,7 @@ def on_save_event_clicked():
     bkup_db()
     update_pending(False)
     
-    messagebox.showinfo('Success', 'Saved database successfully.')
+    messagebox.showinfo('Erfolg', 'Datenbank erfolgreich gespeichert.')
 
 def on_undo_clicked():
     backward_history()
@@ -213,7 +213,7 @@ def get_cell_text(mid, for_excel = False):
     return person['surname'] + ' ' + person['forename'] + (' ' if for_excel else '\n') + str(mid)
 
 def on_export_clicked():
-    xls_path = filedialog.asksaveasfilename(title = 'Select an Excel file', defaultextension = '.xlsx')
+    xls_path = filedialog.asksaveasfilename(title = 'Wählen Sie eine Excel-Datei aus', defaultextension = '.xlsx')
     if xls_path is None or xls_path == '': return
     
     eid = get_eid(page_model['event'], page_model['evvar'].get())

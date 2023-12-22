@@ -18,11 +18,11 @@ page_model = {
     'is_excel': False,
     'treeview': None,
     'column_info': [
-        ('line', { 'title': 'No', 'width': 40 }),
-        ('surname', { 'title': 'Surname', 'editable': True }),
-        ('forename', { 'title': 'Forename', 'editable': True }),
+        ('line', { 'title': 'Nr', 'width': 60 }),
+        ('surname', { 'title': 'Nachname', 'editable': True }),
+        ('forename', { 'title': 'Vorname', 'editable': True }),
         ('mid', { 'title': 'Member-ID', 'editable': True, 'dtype': int }),
-        ('branch', { 'title': 'Branches', 'editable': True, 'dtype': str })
+        ('branch', { 'title': 'Branchen', 'editable': True, 'dtype': str })
     ],
     'history': [],
     'history_pos': 0,
@@ -30,7 +30,7 @@ page_model = {
 }
 
 def init_tab(notebook):
-    tab = create_tab(notebook, 'Personal-Data', on_tab_selected, on_save_database)
+    tab = create_tab(notebook, 'Personen-Infos', on_tab_selected, on_save_database)
 
     top_frame = Frame(tab, height = 700)
     top_frame.pack_propagate(False)
@@ -45,15 +45,15 @@ def init_tab(notebook):
     page_model['buttons'] = create_control_panel(
         master = tab,
         button_info = {
-            'Load SQL\ndatabase': { 'click': on_load_database_clicked },
-            'Load Excel\nDatabase': { 'click': on_load_excel_clicked },
-            'Import contacts\nfrom CSV': { 'click': on_import_csv_clicked },
-            'Save\nDatabase': { 'click': on_save_database },
-            'Restore\nfrom Backup': { 'click': on_restore_database },
-            'Add new Line': { 'click': on_add_line_clicked },
-            'Edit Line': { 'click': on_edit_line_clicked },
-            'Delete Line': { 'click': on_delete_line_clicked },
-            'Show next free\nMember-ID': { 'click': on_next_mid_clicked },
+            'SQL-Datenbank\nladen': { 'click': on_load_database_clicked },
+            'Excel-Datenbank\nladen': { 'click': on_load_excel_clicked },
+            'Kontakte aus CSV\nimportieren': { 'click': on_import_csv_clicked },
+            'Datenbank\nspeichern': { 'click': on_save_database },
+            'Wiederherstellen\naus Backup': { 'click': on_restore_database },
+            'Neue Zeile\nhinzufügen': { 'click': on_add_line_clicked },
+            'Zeile\nbearbeiten': { 'click': on_edit_line_clicked },
+            'Zeile\nlöschen': { 'click': on_delete_line_clicked },
+            'Nächste freie\nMember-ID anzeigen': { 'click': on_next_mid_clicked },
             'Undo': { 'click': on_undo_clicked },
             'Redo': { 'click': on_redo_clicked }
         }
@@ -71,7 +71,7 @@ def on_tab_selected():
 
 def on_treeview_dbl_clicked(tv, item, col_id):
     if not item:
-        messagebox.showerror('Error', 'No row selected.')
+        messagebox.showerror('Fehler', 'Keine Zeile ausgewählt.')
         return
 
     values = tv.item(item, 'values')
@@ -100,7 +100,7 @@ def on_edit(dlg, entries, tags):
         rv, err = check_ci_validation(ci, v)
         
         if err is not None:
-            messagebox.showerror('Entry Error', err)
+            messagebox.showerror('Eingabefehler', err)
             dlg.destroy()
             return
         else:
@@ -127,7 +127,7 @@ def on_add(dlg, entries, tags):
         rv, err = check_ci_validation(ci, v)
         
         if err is not None:
-            messagebox.showerror('Entry Error', err)
+            messagebox.showerror('Eingabefehler', err)
             dlg.destroy()
             return
         else:
@@ -143,7 +143,7 @@ def on_add(dlg, entries, tags):
     update_treeview()
 
 def on_load_excel_clicked():
-    xls_path = filedialog.askopenfilename(title = 'Select an Excel file', filetypes = [('Excel Files', '*.xlsx')])
+    xls_path = filedialog.askopenfilename(title = 'Wählen Sie eine Excel-Datei aus', filetypes = [('Excel-Dateien', '*.xlsx')])
     if xls_path is None or not os.path.exists(xls_path): return
     
     try:
@@ -152,7 +152,7 @@ def on_load_excel_clicked():
         
         df['display'] = range(1, len(df) + 1)
     except Exception:
-        messagebox.showerror('Error', 'Error loading Excel file.')
+        messagebox.showerror('Fehler', 'Fehler beim Laden der Excel-Datei.')
         return
     
     page_model['backbone'] = df
@@ -160,7 +160,7 @@ def on_load_excel_clicked():
     
     reset_history()
     update_pending(True)
-    update_treeview(lambda: messagebox.showinfo('Success', 'Excel file loaded successfully.'))
+    update_treeview(lambda: messagebox.showinfo('Erfolg', 'Excel-Datei erfolgreich geladen.'))
 
 def on_load_database_clicked(is_init = False):
     page_model['backbone'] = load_table('tbl_person', 'display')
@@ -168,10 +168,10 @@ def on_load_database_clicked(is_init = False):
     
     reset_history()
     update_pending(False)
-    update_treeview(None if is_init else lambda: messagebox.showinfo('Success', 'SQL database loaded successfully.'))
+    update_treeview(None if is_init else lambda: messagebox.showinfo('Erfolg', 'SQL-Datenbank erfolgreich geladen.'))
 
 def on_import_csv_clicked():
-    csv_path = filedialog.askopenfilename(title = 'Select a CSV file', filetypes = [('CSV Files', '*.csv')])
+    csv_path = filedialog.askopenfilename(title = 'Wählen Sie eine CSV-Datei aus', filetypes = [('CSV-Datei', '*.csv')])
     if csv_path is None or not os.path.exists(csv_path): return
     
     try:
@@ -183,7 +183,7 @@ def on_import_csv_clicked():
             contact_df = contact_df.drop_duplicates(subset = ['mid', 'forename', 'surname'])
             
             if len(contact_df[contact_df['mid'] == 0]) > 0:
-                messagebox.showerror('Import Error', 'There exists a contact with MemberID=0, which is not allowed.')
+                messagebox.showerror('Importfehler', 'Es existiert ein Kontakt mit MemberID=0, der nicht erlaubt ist.')
                 return                
             
             df = page_model['backbone']
@@ -204,12 +204,12 @@ def on_import_csv_clicked():
             
             reset_history()
             update_pending(True)
-            update_treeview(lambda: messagebox.showinfo('Success', 'Contacs imported successfully.'))            
+            update_treeview(lambda: messagebox.showinfo('Erfolg', 'Kontakte erfolgreich importiert.'))            
         except pd.errors.IntCastingNaNError as e:
-            messagebox.showerror('Import Error', 'Non-numeric values in the Member_ID column.')
+            messagebox.showerror('Importfehler', 'Nicht numerische Werte in der Spalte Member_ID.')
             return
     except Exception:
-        messagebox.showerror('Error', 'Error loading CSV file.')
+        messagebox.showerror('Fehler', 'Fehler beim Laden der CSV-Datei.')
         return
 
 def on_add_line_clicked():
@@ -223,7 +223,7 @@ def on_edit_line_clicked():
         item = tv.selection()[0]
         on_treeview_dbl_clicked(tv, item, 0)
     except Exception:
-        messagebox.showerror('Error', 'Please select a row first.')
+        messagebox.showerror('Fehler', 'Bitte wählen Sie zunächst eine Zeile aus.')
 
 def on_delete_line_clicked():
     tv = page_model['treeview']
@@ -232,7 +232,7 @@ def on_delete_line_clicked():
     items = tv.selection()
     
     if not items:
-        messagebox.showerror('Error', 'Please select row(s) to delete.')
+        messagebox.showerror('Fehler', 'Bitte wählen Sie die zu löschende(n) Zeile(n) aus.')
         return
 
     indices = [df.index[int(tv.item(it, 'values')[0]) - 1] for it in items]    
@@ -246,7 +246,7 @@ def on_next_mid_clicked():
     df = page_model['backbone']
     mid = max(list(df['mid'])) + 1 if len(df) > 0 else 1
     
-    messagebox.showinfo('Info', f"The next free Member_ID is {mid}.")
+    messagebox.showinfo('Info', f"Die nächste freie Member_ID ist {mid}.")
 
 def on_undo_clicked():
     backward_history()
@@ -259,11 +259,11 @@ def on_restore_database():
     g = glob.glob('./bkup/*.db')
     
     if len(g) == 0:
-        messagebox.showerror('No Bkup', 'No database found in backup folder.')
+        messagebox.showerror('Keine Sicherung', 'Im Sicherungsordner wurde keine Datenbank gefunden.')
         return
     
     dlg = tk.Toplevel()
-    dlg.title('Restore DB')
+    dlg.title('DB wiederherstellen')
 
     tkvar = tk.StringVar(dlg)
 
@@ -272,11 +272,11 @@ def on_restore_database():
         choices.append(f)
     
     dropdown = tk.OptionMenu(dlg, tkvar, *choices)
-    tk.Label(dlg, text = "Choose Date").grid(row = 0, column = 0)
+    tk.Label(dlg, text = "Wählen Sie Datum").grid(row = 0, column = 0)
     dropdown.grid(row = 0, column = 1)
 
     entries = { 'date': tkvar }
-    tk.Button(dlg, text = 'Restore', command = lambda: on_restore(dlg, entries)).grid(row = 1, column = 1)
+    tk.Button(dlg, text = 'Wiederherstellen', command = lambda: on_restore(dlg, entries)).grid(row = 1, column = 1)
 
 def on_restore(dlg, entries):
     dt = entries['date'].get()
@@ -296,15 +296,15 @@ def on_save_database():
     df = page_model['backbone']
     
     if True in set(df['null_mid']):
-        messagebox.showerror('Error', 'There exist(s) row(s) with null Member-ID(s).\nPlease fix and retry.')
+        messagebox.showerror('Fehler', 'Es gibt Zeilen mit null Mitglieds-IDs.\nBitte beheben Sie das Problem und versuchen Sie es erneut.')
         return
     
     if True in (set(df['dup_full']) | set(df['dup_mid'])):
-        messagebox.showerror('Error', 'There exist rows with duplicated Member-IDs.\nPlease fix and retry.')
+        messagebox.showerror('Fehler', 'Es gibt Zeilen mit doppelten Mitglieds-IDs.\nBitte beheben Sie das Problem und versuchen Sie es erneut.')
         return
     
     if True in set(df['dup_name']):
-        if not messagebox.askyesno('Duplicated Name', 'There exist rows with the same name.\nWill you continue to save?'):
+        if not messagebox.askyesno('Doppelter Name', 'Es sind Zeilen mit demselben Namen vorhanden.\nWerden Sie mit dem Speichern fortfahren?'):
             return
 
     ev_cols = [col for col in sorted(list(df.columns)) if col.startswith('Event-')]    
@@ -349,13 +349,13 @@ def on_save_database():
     }        
     for tbl, df in tbl_df_dict.items():
         if not save_table(tbl, df):
-            messagebox.showerror('Error', f"Failed to save {tbl}.")
+            messagebox.showerror('Fehler', f"{tbl} konnte nicht gespeichert werden.")
             return
     
     bkup_db()
     update_pending(False)
     
-    messagebox.showinfo('Success', 'Saved database successfully.')
+    messagebox.showinfo('Erfolg', 'Datenbank erfolgreich gespeichert.')
     
 def update_treeview(callback = None):
     tv = page_model['treeview']

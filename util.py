@@ -27,7 +27,7 @@ def check_ci_validation(ci, val):
         try:
             res = int(val)
         except Exception:
-            return 0, f"The field `{ci['title']}` requires integer value."
+            return 0, f"Das Feld `{ci['title']}` erfordert einen ganzzahligen Wert."
     
     return res, None
 

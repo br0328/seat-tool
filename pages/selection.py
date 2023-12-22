@@ -94,7 +94,7 @@ def on_tab_selected():
 
 def on_treeview_dbl_clicked(tv, item, col_id):
     if not item:
-        messagebox.showerror('Error', 'No row selected.')
+        messagebox.showerror('Fehler', 'Keine Zeile ausgewählt.')
         return
 
     values = tv.item(item, 'values')
@@ -120,7 +120,7 @@ def on_import_csv_clicked():
         df = df.rename(columns = {'Mitgliedernummer': 'mid', 'Vorname': 'forename', 'Nachname': 'surname'})
         df['mid'] = pd.to_numeric(df['mid'], errors = 'coerce').fillna(0).astype('int64')
     except Exception:
-        messagebox.showerror('Error', 'Error loading CSV file.')
+        messagebox.showerror('Fehler', 'Error loading CSV file.')
         return
     
     person_df = load_table('tbl_person', 'surname, forename, mid')
@@ -158,7 +158,7 @@ def on_import_csv_clicked():
     
     reset_history()
     update_pending(True)
-    update_treeview(lambda: messagebox.showinfo('Success', 'CSV file loaded successfully.'))
+    update_treeview(lambda: messagebox.showinfo('Erfolg', 'CSV file loaded successfully.'))
 
 def on_edit_line_clicked():
     tv = page_model['treeview']
@@ -167,7 +167,7 @@ def on_edit_line_clicked():
         item = tv.selection()[0]
         on_treeview_dbl_clicked(tv, item, 0)
     except Exception:
-        messagebox.showerror('Error', 'Please select a row first.')
+        messagebox.showerror('Fehler', 'Bitte wählen Sie zunächst eine Zeile aus.')
 
 def on_save_db_clicked():
     df = page_model['backbone']
@@ -179,13 +179,13 @@ def on_save_db_clicked():
     person_match_df = pd.DataFrame(records, columns = ['mid', 'val'])
     
     if not save_table('tbl_person_selection', person_match_df):
-        messagebox.showerror('Error', 'Failed to save tbl_person_selection.')
+        messagebox.showerror('Fehler', 'Failed to save tbl_person_selection.')
         return
 
     bkup_db()
     update_pending(False)
     
-    messagebox.showinfo('Success', 'Saved database successfully.')
+    messagebox.showinfo('Erfolg', 'Datenbank erfolgreich gespeichert.')
 
 def on_visibility_clicked():
     if page_model['visibility']:
@@ -211,7 +211,7 @@ def on_edit(dlg, entries, tags):
         rv, err = check_ci_validation(ci, v)
         
         if err is not None:
-            messagebox.showerror('Entry Error', err)
+            messagebox.showerror('Eingabefehler', err)
             dlg.destroy()
             return
         else:

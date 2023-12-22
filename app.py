@@ -12,6 +12,7 @@ from pages import never_match
 from pages import selection
 from pages import manual
 from pages import edit_event
+from constant import *
 from model import *
 from util import *
 from ui import *
@@ -27,7 +28,7 @@ def on_tab_changed(e):
         save_callback = glob_model['save_callback'][glob_model['cur_tab_name']]
         
         if glob_model['pending'] and save_callback is not None:
-            if messagebox.askyesno('Save', 'There exists modification pending.\nAre you going to save changes?'):
+            if messagebox.askyesno('Speichern', 'Es stehen noch Änderungen an.\nWerden Sie die Änderungen speichern?'):
                 save_callback()
 
             update_pending(False)
@@ -43,7 +44,7 @@ def on_window_close():
         save_callback = glob_model['save_callback'][glob_model['cur_tab_name']]
         
         if glob_model['pending'] and save_callback is not None:
-            if messagebox.askyesno('Save', 'There exists modification pending.\nAre you going to save changes before exit?'):
+            if messagebox.askyesno('Speichern', 'Es stehen noch Änderungen an.\nWerden Sie die Änderungen speichern?'):
                 save_callback()                
 
     glob_model['root'].destroy()
@@ -55,7 +56,7 @@ if not os.path.exists('./bkup/'): os.mkdir('./bkup/')
 glob_model['root'] = root = tk.Tk()
 
 root.protocol('WM_DELETE_WINDOW', on_window_close)
-root.title("Seating Generation")
+root.title(root_title)
 root.update_idletasks()
 
 new_width = root_width#root.winfo_width() * 5

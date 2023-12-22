@@ -112,7 +112,7 @@ def create_control_panel(master, button_info):
 # Show entry input dialog for Add or Edit
 def show_entry_dlg(is_add, values, column_info, callback, tags = ()):
     dlg = tk.Toplevel()
-    dlg.title('Add Entry' if is_add else 'Edit Entry')
+    dlg.title('Eintrag hinzufügen' if is_add else 'Eintrag speichern')
 
     entries, row = {}, 0
     
@@ -129,8 +129,8 @@ def show_entry_dlg(is_add, values, column_info, callback, tags = ()):
         entries[key] = evar
         row += 1
 
-    tk.Button(dlg, text = 'Add' if is_add else 'Save', command = lambda: callback(dlg, entries, tags)).grid(row = row, column = 1)
+    tk.Button(dlg, text = 'Hinzufügen' if is_add else 'Speichern', command = lambda: callback(dlg, entries, tags)).grid(row = row, column = 1)
 
 # Dummy dialog
 def show_not_developed_alert():
-    messagebox.showerror('Error', 'This function is not yet developed.')
+    messagebox.showerror('Fehler', 'Diese Funktion ist noch nicht entwickelt.')

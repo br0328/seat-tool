@@ -128,8 +128,8 @@ def on_comment_clicked(mid, cid, omid, item):
     dlg = tk.Toplevel()
     dlg.title('Edit Cell')
 
-    tkvar = tk.StringVar(dlg, '--Empty--')
-    choices = ['--Empty--']
+    tkvar = tk.StringVar(dlg, '--Niemand--')
+    choices = ['--Niemand--']
     
     for _, r in page_model['person'].iterrows():
         v = f"{r['mid']}: {r['surname']}, {r['forename']}"
@@ -181,7 +181,7 @@ def on_comment(dlg, entries, mid, cid):
     
     choice = null_or(entries['person'].get(), '')
     
-    if choice != '' and choice != '--Empty--':
+    if choice != '' and choice != '--Niemand--':
         omid = int(choice.split(':')[0])
     else:
         omid = 0
@@ -257,7 +257,7 @@ def on_edit_line_clicked():
         item = tv.selection()[0]
         on_treeview_dbl_clicked(tv, item)
     except Exception:
-        messagebox.showerror('Error', 'Please select a row first.')
+        messagebox.showerror('Fehler', 'Bitte wählen Sie zunächst eine Zeile aus.')
 
 def on_save_db_clicked():
     df = page_model['backbone']
@@ -274,17 +274,17 @@ def on_save_db_clicked():
     person_match_df = pd.DataFrame(records, columns = ['mid'] + [f"val{i + 1}" for i in range(page_col_count)])
     
     if not save_table(page_tbl, person_match_df):
-        messagebox.showerror('Error', 'Failed to save tbl_person_match.')
+        messagebox.showerror('Fehler', 'Failed to save tbl_person_match.')
         return
 
     if not save_table('tbl_comment', page_model['comment']):
-        messagebox.showerror('Error', 'Failed to save tbl_comment.')
+        messagebox.showerror('Fehler', 'Failed to save tbl_comment.')
         return
 
     bkup_db()
     update_pending(False)
     
-    messagebox.showinfo('Success', 'Saved database successfully.')
+    messagebox.showinfo('Erfolg', 'Datenbank erfolgreich gespeichert.')
     
 def on_edit(dlg, entries, tags):
     tv = page_model['treeview']
@@ -301,7 +301,7 @@ def on_edit(dlg, entries, tags):
         rv, err = check_ci_validation(ci, v)
         
         if err is not None:
-            messagebox.showerror('Entry Error', err)
+            messagebox.showerror('Eingabefehler', err)
             dlg.destroy()
             return
         else:

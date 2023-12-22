@@ -104,7 +104,7 @@ def on_tab_selected():
 
 def on_treeview_dbl_clicked(tv, item, col_id):
     if not item:
-        messagebox.showerror('Error', 'No row selected.')
+        messagebox.showerror('Fehler', 'Keine Zeile ausgewählt.')
         return
 
     values = tv.item(item, 'values')    
@@ -122,7 +122,7 @@ def on_add(dlg, entries, tags):
         rv, err = check_ci_validation(ci, v)
         
         if err is not None:
-            messagebox.showerror('Entry Error', err)
+            messagebox.showerror('Eingabefehler', err)
             dlg.destroy()
             return
         else:
@@ -184,7 +184,7 @@ def on_add_event(dlg, entries):
     title = entries['title'].get()
     
     if title == '':
-        messagebox.showerror('Error', 'Event name should not be empty string.')
+        messagebox.showerror('Fehler', 'Event name should not be empty string.')
         dlg.destroy()
         return
     
@@ -217,11 +217,11 @@ def on_add_event(dlg, entries):
             person_ev_df = pd.concat([person_ev_df, pd.Series(rec).to_frame().T], ignore_index = True)            
     
     if not save_table('tbl_event', ev_df):
-        messagebox.showerror('Error', 'Failed to save tbl_event.')
+        messagebox.showerror('Fehler', 'Failed to save tbl_event.')
         return
     
     if not save_table('tbl_person_event', person_ev_df):
-        messagebox.showerror('Error', 'Failed to save tbl_person_event.')
+        messagebox.showerror('Fehler', 'Failed to save tbl_person_event.')
         return
     
     page_model['event'] = person_ev_df
@@ -229,13 +229,13 @@ def on_add_event(dlg, entries):
     page_model['conflict'] = None
     
     if not save_table('tbl_new_event', df):
-        messagebox.showerror('Error', 'Failed to save tbl_new_event.')
+        messagebox.showerror('Fehler', 'Failed to save tbl_new_event.')
         return
 
     bkup_db()
     update_pending(False)
     
-    messagebox.showinfo('Success', 'Saved database successfully.')
+    messagebox.showinfo('Erfolg', 'Datenbank erfolgreich gespeichert.')
     update_treeview()
 
 def on_edit(dlg, entries, tags):
@@ -253,7 +253,7 @@ def on_edit(dlg, entries, tags):
         rv, err = check_ci_validation(ci, v)
         
         if err is not None:
-            messagebox.showerror('Entry Error', err)
+            messagebox.showerror('Eingabefehler', err)
             dlg.destroy()
             return
         else:
@@ -333,7 +333,7 @@ def update_columns():
     page_model['treeview']['displaycolumns'] = ['line'] + show_colummns
 
 def on_export_clicked():
-    xls_path = filedialog.asksaveasfilename(title = 'Select an Excel file', defaultextension = '.xlsx')
+    xls_path = filedialog.asksaveasfilename(title = 'Wählen Sie eine Excel-Datei aus', defaultextension = '.xlsx')
     if xls_path is None or xls_path == '': return
     
     df = page_model['backbone']
@@ -356,16 +356,16 @@ def on_export_clicked():
     messagebox.showinfo('Export', f"Successfully exported to {xls_path}")
 
 def on_import_clicked():
-    xls_path = filedialog.askopenfilename(title = 'Select an Excel file', filetypes = [('Excel Files', '*.xlsx')])
+    xls_path = filedialog.askopenfilename(title = 'Wählen Sie eine Excel-Datei aus', filetypes = [('Excel Files', '*.xlsx')])
     if xls_path is None or not os.path.exists(xls_path): return
     
     try:
         df = pd.read_excel(xls_path)
     except Exception:
-        messagebox.showerror('Error', 'Error loading Excel file.')
+        messagebox.showerror('Fehler', 'Fehler beim Laden der Excel-Datei.')
         return
     
     page_model['backbone'] = df
     
     update_pending(True)
-    update_treeview(lambda: messagebox.showinfo('Success', 'Excel file loaded successfully.'))
+    update_treeview(lambda: messagebox.showinfo('Erfolg', 'Excel-Datei erfolgreich geladen.'))
