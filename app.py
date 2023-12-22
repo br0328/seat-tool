@@ -19,6 +19,9 @@ from ui import *
 import tkinter as tk
 import os
 
+# PyInstaller Command
+# pyinstaller --onefile --collect-all tkinterweb app.py
+
 # Run a callback function for a newly opened tab page
 def on_tab_changed(e):
     tab = e.widget.select()

@@ -15,7 +15,7 @@ never_match_col_count = 10
 desk_count = 50
 desk_size = 6
 
-root_width = 1000
-root_height = 800
+root_width = 1400
+root_height = 830
 
 tv_height = 700
