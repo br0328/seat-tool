@@ -18,26 +18,26 @@
 
 <h5>(2) Excel-Datenbank laden</h5>
 <p>Lädt eine Datenbankdatei im Excel-Format und aktualisiert die Seite. Die Excel-Datei ist ein alternatives Datenbankformat, das nicht nur die Tabelle der Mitglieder, sondern auch Informationen über Match/No-Match/Never-Match und historische Events mit Sitzplätzen enthält.</p>
-<img src="shot-1.png" alt="Example of Excel Database">
+<img src="shot-2.png" alt="Example of Excel Database">
 
 <h5>(3) Kontakte aus CSV importieren</h5>
 <p>Lädt eine CSV-Datei mit Informationen über neue Mitglieder und fügt die entsprechenden Datensätze zur bestehenden Tabelle hinzu.</p>
-<img src="shot-1.png" alt="Example of Contact CSV">
+<img src="shot-3.png" alt="Example of Contact CSV">
 
 <h5>(4) Datenbank speichern</h5>
 <p>Saves the modified table(s) onto Sqlite3 database. If the current page was loaded from Excel-format database, all related tables(members, match/no-match information and events) are saved. Otherwise, only the table of members is saved.</p>
 
 <h5>(5) Wiederherstellen aus Backup</h5>
 <p>Lädt eine frühere Sqlite3-Datenbankdatei aus dem Sicherungsverzeichnis. ([APP_ROOT_PATH]/bkup) Sie können den Zeitpunkt der wieder herzustellenden früheren Datenbank im Pop-up-Dialog auswählen.</p>
-<img src="short-1.png" alt="Restore Database from Backup">
+<img src="short-4.png" alt="Restore Database from Backup">
 
 <h5>(6) Neue Zeile hinzufügen</h5>
 <p>Fügt eine neue Zeile hinzu, in der eine neue Person eingegeben werden kann. Sie können die Informationen für ein neues Mitglied im Pop-up-Dialog eingeben und auf die Schaltfläche "Hinzufügen" klicken.</p>
-<img src="shot-1.png" alt="Add Member Dialog">
+<img src="shot-5.png" alt="Add Member Dialog">
 
 <h5>(7) Zeile bearbeiten</h5>
 <p>Ändert die Informationen einer bestehenden Person in der ausgewählten Zeile. Sie können die Informationen im Pop-up-Dialog ändern und auf die Schaltfläche "Speichern" klicken, um sie zu übernehmen.</p>
-<img src="shot-1.png" alt="Edit Member Dialog">
+<img src="shot-6.png" alt="Edit Member Dialog">
 
 <h5>(8) Zeile löschen</h5>
 <p>Entfernt ein Mitglied mit der ausgewählten Zeile.</p>
@@ -54,11 +54,11 @@
 <h3>Tab: Hist-Events</h3>
 
 <p>Auf dieser Registerkarte können Sie den Eventsverlauf mit Sitzplatzinformationen einsehen und bearbeiten. Sie können auch manuell eine neue Event und Sitzordnung hinzufügen.</p>
-<img src="shot-1.png" alt="Hist-Events Tab">
+<img src="shot-7.png" alt="Hist-Events Tab">
 
 <h5>(1) Neue Spalte hinzufügen</h5>
 <p>Fügt eine neue Event hinzu. Sie sollten das Datum einer neuen Event im Pop-up-Dialog eingeben.</p>
-<img src="shot-1.png" alt="Add Event Dialog">
+<img src="shot-8.png" alt="Add Event Dialog">
 
 <h5>(2) Datenbank speichern</h5>
 <p>Speichert die geänderte Tabelle in der Sqlite3-Datenbank.</p>
@@ -68,19 +68,19 @@
 
 <h5>(4) Spaltenüberschrift bearbeiten</h5>
 <p>Ändert das Datum eines Events, das der ausgewählten Zelle entspricht.</p>
-<img src="shot-1.png" alt="Edit Event Dialog">
+<img src="shot-9.png" alt="Edit Event Dialog">
 
 <h5>(5) Spalte löschen</h5>
 <p>Entfernt ein Event, das der ausgewählten Zelle entspricht.</p>
 
 <h5>(6) Zellenwert bearbeiten</h5>
 <p>Ändert die Anzahl der Tische für ein Mitglied und ein Event, das der ausgewählten Zelle entspricht.</p>
-<img src="shot-1.png" alt="Edit Value Dialog">
+<img src="shot-10.png" alt="Edit Value Dialog">
 
 <h3>Tabs: Match / No-Match / Never-Match</h3>
 
 <p>Auf diesen Tabs können Sie die Beziehungen zwischen Mitgliedern verwalten. Match bedeutet, dass Personen nach Möglichkeit am gleichen Tisch platziert werden. Mit No-Match kann temporär (für den nächsten Event) verhindert werden, dass zwei Personen zusammen platziert werden. Never-Match ist ähnlich wie No-Match, ist aber eher für eine längerfristige Vermeidung von Personen-Verknüpfungen gedacht.</p>
-<img src="shot-1.png" alt="Match Tab">
+<img src="shot-11.png" alt="Match Tab">
 
 <h5>(1) Datenbank speichern</h5>
 <p>Speichert die geänderte Tabelle in der Sqlite3-Datenbank.</p>
@@ -90,19 +90,19 @@
 
 <h5>(3) Übereinstimmungsinfo bearbeiten</h5>
 <p>Ändert/Löscht die Beziehung, die der ausgewählten Zelle entspricht. Sie können ein Mitglied aus der Dropdown-Liste im Pop-up-Dialog auswählen, das mit dem ausgewählten Mitglied in Beziehung steht. Wenn Sie "--Leer--" aus der Dropdown-Liste wählen, wird die entsprechende Beziehung gelöscht. Jede Beziehung kann mit einem Kommentar, d.h. einer kurzen Beschreibung, versehen werden. Sie können den Kommentar im Dialogfeld hinzufügen oder bearbeiten.</p>
-<img src="shot-1.png" alt="Edit Match Info Dialog">
+<img src="shot-12.png" alt="Edit Match Info Dialog">
 
 <h3>Tab: Auswahl</h3>
 
 <p>Auf dieser Registerkarte können Sie die Auswahl von Personen für die Planung eines Events verwalten.</p>
-<img src="shot-1.png" alt="Selection Tab">
+<img src="shot-13.png" alt="Selection Tab">
 
 <h5>(1) Auswahl umschalten/Doppelklick auf eine Zeile</h5>
 <p>Schaltet den Auswahlstatus eines entsprechenden Mitglieds um. Grüner Hintergrund bedeutet ausgewählt.</p>
 
 <h5>(2) Auswahl aus CSV laden</h5>
 <p>Liest eine CSV-Datei mit besuchten Mitgliedern und aktualisiert die Seite.</p>
-<img src="shot-1.png" alt="Example of CSV">
+<img src="shot-14.png" alt="Example of CSV">
 
 <h5>(3) Nur ausgewählte Zeilen anzeigen/Alle Zeilen anzeigen</h5>
 <p>Schaltet den Visualisierungsmodus der Seite um, dass nur ausgewählte Mitgliederzeilen oder alle Mitgliederzeilen angezeigt werden.</p>
@@ -116,30 +116,30 @@
 <h3>Tab: New-Event</h3>
 
 <p>Auf dieser Registerkarte können Sie eine Sitzordnung für eine neue Event erstellen und die Event hochladen.</p>
-<img src="shot-1.png" alt="New Event Tab">
+<img src="shot-15.png" alt="New Event Tab">
 
 <h5>(1) Neue Event generieren</h5>
 <p>Erzeugt eine Sitzordnung mit Hilfe des Evolutionären Algorithmus. Das Ergebnis ist die bestmögliche Lösung einer Sitzordnung.</p>
 
 <h5>(2) Zu Hist-Events hinzufügen und Datenbank speichern</h5>
 <p>Lädt einen neuen Event mit der generierten Sitzordnung. Sie sollten das Datum eines neuen Events im Pop-up-Dialog eingeben. Das Format lautet: YYYY-MM-DD</p>
-<img src="shot-1.png" alt="Add Event">
+<img src="shot-16.png" alt="Add Event">
 
 <h5>(3) Event nach XLSX exportieren</h5>
 <p>Gibt eine Excel-Datei mit der generierten Sitzordnung aus.</p>
-<img src="shot-1.png" alt="Excel Report">
+<img src="shot-17.png" alt="Excel Report">
 
 <h3>Tab: Edit-Event</h3>
 
 <p>In dieser Registerkarte können Sie die Sitzordnung für einen unter Hist-Events existierenden Event bearbeiten.</p>
-<img src="shot-1.png" alt="Edit Event Tab">
+<img src="shot-18.png" alt="Edit Event Tab">
 
 <h5>(1) Event speichern</h5>
 <p>Speichert die geänderte Sitzordnung in der Sqlite3-Datenbank.</p>
 
 <h5>(2) Event nach XLSX exportieren</h5>
 <p>Gibt eine Excel-Datei mit der aktuellen Sitzordnung aus.</p>
-<img src="shot-1.png" alt="Excel Report">
+<img src="shot-17.png" alt="Excel Report">
 
 <h5>(3) Undo/Redo</h5>
 <p>Rückwärts-/Vorwärts-Aktionen.</p>
