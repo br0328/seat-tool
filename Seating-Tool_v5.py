@@ -115,7 +115,7 @@ def display_and_decide(df_duplicates, color, df_new_copy, do_not_import_list):
 ########################################################################################################
 def import_contacts():
     global df
-    filepath = filedialog.askopenfilename(title="Wählen Sie eine CSV-Datei aus", filetypes=[("CSV files", "*.csv")])
+    filepath = filedialog.askopenfilename(title="Wählen Sie eine CSV-Datei aus", filetypes=[("CSV-Dateien", "*.csv")])
     if not filepath:
         return
     df_new = pd.read_csv(filepath, usecols=['Forename', 'Surname', 'Member_ID', 'Branch'])
@@ -788,7 +788,7 @@ def load_comment(item_id, column_name):
 def find_next_Member_ID():
     global df
     highest_number_db = df['Member_ID'].max() if df is not None and not df.empty else 0
-    filepath = filedialog.askopenfilename(title="Select the current CSV file corresponding to the status of Editor X.", filetypes=[("CSV Files", "*.csv")])
+    filepath = filedialog.askopenfilename(title="Select the current CSV file corresponding to the status of Editor X.", filetypes=[("CSV-Dateien", "*.csv")])
     if not filepath:
         messagebox.showinfo("Action Cancelled", "No CSV file selected.")
         return

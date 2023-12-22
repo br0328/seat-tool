@@ -27,7 +27,7 @@ page_model = {
 }
 
 def init_tab(notebook):
-    tab = create_tab(notebook, 'Selection', on_tab_selected, on_save_db_clicked)
+    tab = create_tab(notebook, 'Auswahl', on_tab_selected, on_save_db_clicked)
     
     top_frame = Frame(tab, height = 700)
     top_frame.pack_propagate(False)
@@ -47,16 +47,16 @@ def init_tab(notebook):
     page_model['buttons'] = create_control_panel(
         master = tab,
         button_info = {
-            'Toggle selection': { 'click': on_edit_line_clicked },
-            'Load selection\nfrom CSV': { 'click': on_import_csv_clicked },
+            'Auswahl umschalten': { 'click': on_edit_line_clicked },
+            'Auswahl aus CSV laden': { 'click': on_import_csv_clicked },
             'Visibility': { 'click': on_visibility_clicked },
-            'Save Database': { 'click': on_save_db_clicked },
+            'Datenbank speichern': { 'click': on_save_db_clicked },
             'Undo': { 'click': on_undo_clicked },
             'Redo': { 'click': on_redo_clicked }
         }
     )
     
-    page_model['buttons']['Visibility']['text'] = 'Show only\nselected lines'
+    page_model['buttons']['Visibility']['text'] = 'Nur ausgewählte Zeilen anzeigen'
     page_model['visibility'] = True
     
     page_model['treeview'].tag_configure('checked', background = 'lightgreen')
@@ -112,7 +112,7 @@ def on_treeview_dbl_clicked(tv, item, col_id):
 
 # Assumed that only selected members are listed in the CSV file
 def on_import_csv_clicked():
-    csv_path = filedialog.askopenfilename(title = 'Select an CSV file', filetypes = [('CSV Files', '*.csv')])
+    csv_path = filedialog.askopenfilename(title = 'Wählen Sie eine CSV-Datei aus', filetypes = [('CSV-Dateien', '*.csv')])
     if csv_path is None or not os.path.exists(csv_path): return
     
     try:
@@ -120,7 +120,7 @@ def on_import_csv_clicked():
         df = df.rename(columns = {'Mitgliedernummer': 'mid', 'Vorname': 'forename', 'Nachname': 'surname'})
         df['mid'] = pd.to_numeric(df['mid'], errors = 'coerce').fillna(0).astype('int64')
     except Exception:
-        messagebox.showerror('Fehler', 'Error loading CSV file.')
+        messagebox.showerror('Fehler', 'Fehler beim Laden der CSV-Datei.')
         return
     
     person_df = load_table('tbl_person', 'surname, forename, mid')
@@ -137,7 +137,7 @@ def on_import_csv_clicked():
         if not found: errors.append(f"{r['mid']}: {r['forename']} {r['surname']}")
     
     if len(errors) > 0:
-        messagebox.showwarning('Invalid Members', 'The following {} entries from CSV are inconsistent with the database.\nPlease check first name, last name and member ID, and correct them if necessary.\n\n{}'.
+        messagebox.showwarning('Ungültige Mitglieder', 'Die folgenden {} Einträge aus CSV stimmen nicht mit der Datenbank überein.\nBitte überprüfen Sie Vorname, Nachname und Mitglieds-ID und korrigieren Sie diese gegebenenfalls.\n\n{}'.
             format(len(errors), '\n'.join(errors)))
         return
     
@@ -158,7 +158,7 @@ def on_import_csv_clicked():
     
     reset_history()
     update_pending(True)
-    update_treeview(lambda: messagebox.showinfo('Erfolg', 'CSV file loaded successfully.'))
+    update_treeview(lambda: messagebox.showinfo('Erfolg', 'CSV-Datei erfolgreich geladen.'))
 
 def on_edit_line_clicked():
     tv = page_model['treeview']
@@ -179,7 +179,7 @@ def on_save_db_clicked():
     person_match_df = pd.DataFrame(records, columns = ['mid', 'val'])
     
     if not save_table('tbl_person_selection', person_match_df):
-        messagebox.showerror('Fehler', 'Failed to save tbl_person_selection.')
+        messagebox.showerror('Fehler', 'tbl_person_selection konnte nicht gespeichert werden.')
         return
 
     bkup_db()
@@ -189,9 +189,9 @@ def on_save_db_clicked():
 
 def on_visibility_clicked():
     if page_model['visibility']:
-        page_model['buttons']['Visibility']['text'] = 'Show all\nlines'
+        page_model['buttons']['Visibility']['text'] = 'Alle Zeilen anzeigen'
     else:
-        page_model['buttons']['Visibility']['text'] = 'Show only\nselected lines'
+        page_model['buttons']['Visibility']['text'] = 'Nur ausgewählte Zeilen anzeigen'
     
     page_model['visibility'] = not page_model['visibility']
     on_tab_selected()

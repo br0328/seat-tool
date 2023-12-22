@@ -20,7 +20,7 @@ page_model = {
     'label': None,
     'score': 0,
     'column_info': [
-        ('line', { 'title': 'No', 'width': 40 })
+        ('line', { 'title': 'Nr', 'width': 40 })
     ] + [
         (f"val{i}", { 'title': f"Table {i}", 'editable': True, 'dtype': str })
         for i in range(1, desk_count + 1)
@@ -53,7 +53,7 @@ def init_tab(notebook):
     brk_frame.pack_propagate(False)
     brk_frame.pack(fill = 'x', expand = False)
     
-    page_model['label'] = Label(brk_frame, text = 'Click "Generate new event" button.')
+    page_model['label'] = Label(brk_frame, text = 'Klicken Sie auf die Schaltfläche "Neues Ereignis generieren".')
     page_model['label'].grid(row = 0, column = 0)
     
     mid_frame = Frame(tab, height = 300)
@@ -63,11 +63,11 @@ def init_tab(notebook):
     page_model['confview'], _ = create_treeview(
         master = mid_frame,
         column_info = [
-            ('line', { 'title': 'No', 'width': 40 }),
+            ('line', { 'title': 'Nr', 'width': 40 }),
             ('person1', { 'title': 'Person1' }),
             ('person2', { 'title': 'Person2' }),
-            ('val', { 'title': 'Value' }),
-            ('conflict', { 'title': 'Conflict' })
+            ('val', { 'title': 'Wert' }),
+            ('conflict', { 'title': 'Konflikt' })
         ],
         style = 'ne.Treeview',
         dbl_click_callback = None,
@@ -82,9 +82,9 @@ def init_tab(notebook):
     create_control_panel(
         master = bottom_frame,
         button_info = {
-            'Generate\nnew event': { 'click': on_add_line_clicked },
-            'Add to Hist-event and\nsave database': { 'click': on_save_db_clicked },
-            'Export event\nto XLS': { 'click': on_export_clicked },
+            'Neue Event\ngenerieren': { 'click': on_add_line_clicked },
+            'Zu Hist-Events hinzufügen\nund Datenbank speichern': { 'click': on_save_db_clicked },
+            'Event nach XLSX\nexportieren': { 'click': on_export_clicked },
             #'Import event\nfrom XLS': { 'click': on_import_clicked }
         }
     )
@@ -169,22 +169,22 @@ def on_add_line_clicked():
 
 def on_save_db_clicked():
     dlg = tk.Toplevel()
-    dlg.title('Add Event')
+    dlg.title('Ereignis hinzufügen')
 
     evar = tk.StringVar(dlg, value = '')
     ent = tk.Entry(dlg, textvariable = evar)
     
-    tk.Label(dlg, text = 'Event Name: ').grid(row = 0, column = 0)
+    tk.Label(dlg, text = 'Veranstaltungsname: ').grid(row = 0, column = 0)
     ent.grid(row = 0, column = 1)
     
     entries = { 'title': evar }
-    tk.Button(dlg, text = 'Add', command = lambda: on_add_event(dlg, entries)).grid(row = 1, column = 1)
+    tk.Button(dlg, text = 'Hinzufügen', command = lambda: on_add_event(dlg, entries)).grid(row = 1, column = 1)
 
 def on_add_event(dlg, entries):
     title = entries['title'].get()
     
     if title == '':
-        messagebox.showerror('Fehler', 'Event name should not be empty string.')
+        messagebox.showerror('Fehler', 'Der Ereignisname sollte keine leere Zeichenfolge sein.')
         dlg.destroy()
         return
     
@@ -217,11 +217,11 @@ def on_add_event(dlg, entries):
             person_ev_df = pd.concat([person_ev_df, pd.Series(rec).to_frame().T], ignore_index = True)            
     
     if not save_table('tbl_event', ev_df):
-        messagebox.showerror('Fehler', 'Failed to save tbl_event.')
+        messagebox.showerror('Fehler', 'tbl_event konnte nicht gespeichert werden.')
         return
     
     if not save_table('tbl_person_event', person_ev_df):
-        messagebox.showerror('Fehler', 'Failed to save tbl_person_event.')
+        messagebox.showerror('Fehler', 'tbl_person_event  konnte nicht gespeichert werden.')
         return
     
     page_model['event'] = person_ev_df
@@ -229,7 +229,7 @@ def on_add_event(dlg, entries):
     page_model['conflict'] = None
     
     if not save_table('tbl_new_event', df):
-        messagebox.showerror('Fehler', 'Failed to save tbl_new_event.')
+        messagebox.showerror('Fehler', 'tbl_new_event konnte nicht gespeichert werden.')
         return
 
     bkup_db()
@@ -303,9 +303,9 @@ def update_treeview(callback = None):
             )
             i += 1
         
-        page_model['label'].config(text = 'Goodness = {:.1f},  Conflicts = {}'.format(page_model['score'], i))
+        page_model['label'].config(text = 'Güte = {:.1f},  Konflikte = {}'.format(page_model['score'], i))
     else:
-        page_model['label'].config(text = 'Click "Generate new event" button.')
+        page_model['label'].config(text = 'Klicken Sie auf die Schaltfläche "Neues Ereignis generieren".')
             
     if callback: callback()
 
@@ -353,7 +353,7 @@ def on_export_clicked():
             df.at[i, col] = get_cell_text(int(r[col]) if r[col] is not None else '', for_excel = True)
     
     df.to_excel(xls_path, index = False)
-    messagebox.showinfo('Export', f"Successfully exported to {xls_path}")
+    messagebox.showinfo('Export', f"Erfolgreich nach {xls_path} exportiert.")
 
 def on_import_clicked():
     xls_path = filedialog.askopenfilename(title = 'Wählen Sie eine Excel-Datei aus', filetypes = [('Excel Files', '*.xlsx')])

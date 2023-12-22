@@ -20,7 +20,7 @@ page_model = {
     'topframe': None,
     'dropdown': None,
     'column_info': [
-        ('line', { 'title': 'No', 'width': 40 })
+        ('line', { 'title': 'Nr', 'width': 40 })
     ] + [
         (f"val{i}", { 'title': f"Table {i}", 'editable': True, 'dtype': str })
         for i in range(1, desk_count + 1)
@@ -45,8 +45,8 @@ def init_tab(notebook):
     top_frame.pack(fill = 'x', expand = False)
     
     Frame(top_frame, height = 15).grid(row = 0, column = 0)
-    Label(top_frame, text = 'Select Event: ').grid(row = 1, column = 0)
-    Button(top_frame, text = 'Load', command = on_check_clicked).grid(row = 1, column = 2)
+    Label(top_frame, text = 'Wählen Sie Ereignis aus: ').grid(row = 1, column = 0)
+    Button(top_frame, text = 'Lade', command = on_check_clicked).grid(row = 1, column = 2)
     
     mid_frame = Frame(tab, height = 650)
     mid_frame.pack_propagate(False)
@@ -64,8 +64,8 @@ def init_tab(notebook):
     page_model['buttons'] = create_control_panel(
         master = bottom_frame,
         button_info = {
-            'Save event': { 'click': on_save_event_clicked },
-            'Export event\nto XLS': { 'click': on_export_clicked },
+            'Event speichern': { 'click': on_save_event_clicked },
+            'Event nach XLSX exportieren': { 'click': on_export_clicked },
             'Undo': { 'click': on_undo_clicked },
             'Redo': { 'click': on_redo_clicked }
         }
@@ -107,11 +107,11 @@ def on_save_event_clicked():
     df = page_model['backbone']
     
     if eid is None:
-        messagebox.showerror('No Event', 'No event is loaded.')
+        messagebox.showerror('No Event', 'Es wird kein Ereignis geladen.')
         return
         
     if df is None:
-        messagebox.showerror('No Event', 'No event is loaded.')
+        messagebox.showerror('No Event', 'Es wird kein Ereignis geladen.')
         return
     
     arr = []
@@ -126,7 +126,7 @@ def on_save_event_clicked():
             dcount[cid] += 1
             
             if dcount[cid] >= desk_size + 1:
-                messagebox.showerror('Desk Overflow', 'There is a desk exceeding limit size.')
+                messagebox.showerror('Schreibtischüberlauf', 'Es gibt einen Schreibtisch, der die zulässige Größe überschreitet.')
                 return
     
     df = page_model['person_event']
@@ -134,7 +134,7 @@ def on_save_event_clicked():
     df = pd.concat([df, pd.DataFrame(arr, columns = ['mid', 'eid', 'val'])])
     
     if not save_table('tbl_person_event', df):
-        messagebox.showerror('Fehler', 'Failed to save tbl_person_event.')
+        messagebox.showerror('Fehler', 'tbl_person_event konnte nicht gespeichert werden.')
         return
     
     page_model['person_event'] = df
@@ -220,11 +220,11 @@ def on_export_clicked():
     df = page_model['backbone']
     
     if eid is None:
-        messagebox.showerror('No Event', 'No event is loaded.')
+        messagebox.showerror('Kein Event', 'Es wird kein Ereignis geladen.')
         return
         
     if df is None:
-        messagebox.showerror('No Event', 'No event is loaded.')
+        messagebox.showerror('Kein Event', 'Es wird kein Ereignis geladen.')
         return
     
     arr = [([str(i + 1)] + ['' for _ in range(desk_count)]) for i in range(desk_size)]
@@ -236,7 +236,7 @@ def on_export_clicked():
             if mid == '': continue
             
             if dcount[cid] >= desk_size:
-                messagebox.showerror('Desk Overflow', 'There is a desk exceeding limit size.')
+                messagebox.showerror('Schreibtischüberlauf', 'Es gibt einen Schreibtisch, der die zulässige Größe überschreitet.')
                 return
             
             arr[dcount[cid]][cid + 1] = get_cell_text(int(mid), for_excel = True)
@@ -245,7 +245,7 @@ def on_export_clicked():
     df = pd.DataFrame(arr, columns = ['Seat'] + [f"Table {i + 1}" for i in range(desk_count)])    
     df.to_excel(xls_path, index = False)
     
-    messagebox.showinfo('Export', f"Successfully exported to {xls_path}")
+    messagebox.showinfo('Export', f"Erfolgreich nach {xls_path} exportiert.")
 
 def on_move_down(ev):
     page_model['from_info'] = (None, None)
@@ -298,7 +298,7 @@ def on_move_up(ev):
                     update_pending(True)
                     update_treeview()
                 else:
-                    messagebox.showerror('Full Desk', 'Cannot find vacant seat in Table {}.'.format(col_id))            
+                    messagebox.showerror('Voller Schreibtisch', 'In Tabelle {} kann kein freier Platz gefunden werden.'.format(col_id))            
         except Exception as exc:
             pass
         finally:
@@ -332,8 +332,8 @@ def on_shortcut_clicked(ev):
                         break
 
                 popup_menu = tk.Menu(page_model['tab'], tearoff = 0)                
-                if idx is not None: popup_menu.add_command(label = f"Add Person", command = lambda: on_add_clicked(col_id, idx))
-                if mid != '': popup_menu.add_command(label = f"Remove Person", command = lambda: on_remove_clicked(row_id, col_id))
+                if idx is not None: popup_menu.add_command(label = f"Person hinzufügen", command = lambda: on_add_clicked(col_id, idx))
+                if mid != '': popup_menu.add_command(label = f"Person entfernen", command = lambda: on_remove_clicked(row_id, col_id))
                 popup_menu.tk_popup(ev.x_root, ev.y_root)
     finally:
         if popup_menu is not None: popup_menu.grab_release()
@@ -363,21 +363,21 @@ def on_add_clicked(col_id, idx):
         choices.append(v)
 
     if len(choices) == 0:
-        messagebox.showerror('All Seated', 'All members are seated.')
+        messagebox.showerror('Alle sitzen', 'Alle Mitglieder sitzen.')
         return
 
     dlg = tk.Toplevel()
-    dlg.title('Add Person')
+    dlg.title('Person hinzufügen')
 
     tkvar = tk.StringVar(dlg)    
     dropdown = tk.OptionMenu(dlg, tkvar, *choices)
     
-    tk.Label(dlg, text = 'Will be seated in Table ' + str(col_id)).grid(row = 0, column = 0)    
-    tk.Label(dlg, text = "Choose a person").grid(row = 1, column = 0)
+    tk.Label(dlg, text = 'Wird an Tisch ' + str(col_id) + ' Platz nehmen.').grid(row = 0, column = 0)    
+    tk.Label(dlg, text = "Wähle eine Person").grid(row = 1, column = 0)
     dropdown.grid(row = 1, column = 1)
 
     entries = { 'person': tkvar }
-    tk.Button(dlg, text = 'Save', command = lambda: on_add(dlg, entries, col_id, idx)).grid(row = 2, column = 1)
+    tk.Button(dlg, text = 'Speichern', command = lambda: on_add(dlg, entries, col_id, idx)).grid(row = 2, column = 1)
 
 def on_add(dlg, entries, col_id, idx):    
     choice = null_or(entries['person'].get(), '')
