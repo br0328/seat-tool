@@ -94,7 +94,7 @@ def on_tab_selected():
     for _, r in page_model['event'].iterrows():
         choices.append(r['title'])
 
-    page_model['dropdown'] = dropdown = tk.OptionMenu(page_model['topframe'], page_model['evvar'], *choices)
+    page_model['dropdown'] = dropdown = tk.OptionMenu(page_model['topframe'], page_model['evvar'], '' if len(choices) == 0 else choices[0], *choices)
     dropdown.grid(row = 1, column = 1)
 
     page_model['buttons']['Undo']['state'] = 'disabled'
