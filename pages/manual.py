@@ -2,7 +2,6 @@
 """ Manual HTML Tab Page
 """
 
-from tkhtmlview import HTMLScrolledText, RenderHTML
 from tkinterweb import HtmlFrame
 from tkinter import messagebox
 from constant import *
