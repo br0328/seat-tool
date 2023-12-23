@@ -6,7 +6,7 @@ from tkinterweb import HtmlFrame
 from tkinter import messagebox
 from constant import *
 from ui import *
-import os
+import sys
 
 page_model = {
     'tab': None,
@@ -24,7 +24,7 @@ def on_tab_selected():
     # webview.fit_height()
 
     webview = HtmlFrame(page_model['tab'])
-    webview.load_file(os.getcwd() + '/data/readme.html')
+    webview.load_file(sys._MEIPASS + '/data/readme.html')
     webview.pack(expand = True, fill = 'both', padx = 10, pady = 10)
     
     # webview = HTMLScrolledText(page_model['tab'], html = RenderHTML(manual_doc_path))
