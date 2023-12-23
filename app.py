@@ -20,7 +20,7 @@ import tkinter as tk
 import os
 
 # PyInstaller Command
-# pyinstaller --onefile --collect-all tkinterweb app.py
+# pyinstaller --onefile --collect-all tkinterweb --add-data="./data/readme.html:./data" --add-data="./data/shot-1.png:./data" --add-data="./data/shot-2.png:./data" --add-data="./data/shot-3.png:./data" --add-data="./data/shot-4.png:./data" --add-data="./data/shot-5.png:./data" --add-data="./data/shot-6.png:./data" --add-data="./data/shot-7.png:./data" --add-data="./data/shot-8.png:./data" --add-data="./data/shot-9.png:./data" --add-data="./data/shot-10.png:./data" --add-data="./data/shot-11.png:./data" --add-data="./data/shot-12.png:./data" --add-data="./data/shot-13.png:./data" --add-data="./data/shot-14.png:./data" --add-data="./data/shot-15.png:./data" --add-data="./data/shot-16.png:./data" --add-data="./data/shot-17.png:./data" --add-data="./data/shot-18.png:./data" app.py
 
 # Run a callback function for a newly opened tab page
 def on_tab_changed(e):
